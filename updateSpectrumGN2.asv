@@ -1,0 +1,35 @@
+function dse_opt = updateSpectrumGN2(dataRates, distance, systemParameters)
+% Update spectrum usage of all the demands with GN model, the demands have
+% dataRates Gbps transmitting distance (#spans)
+
+% difference between updateSpectrumGN:
+% updateSpectrumGN update demands one by one, this function update demands
+% all together
+
+alpha = systemParameters.alpha;
+beta = systemParameters.beta;
+gamma = systemParameters.gamma;
+Nase = systemParameters.Nase;
+
+x0 = dataRates./initilizeSpectrumTR(dataRates, distance);
+Nuser = length(dataRates);
+p
+
+%%
+funobj = @(x) -sum(x);
+options = optimoptions('fmincon','Display','off','Algorithm','sqp');
+dse_opt = fmincon(funobj,x0,[],[],[],[],ones(Nuser, 1),12*ones(Nuser, 1),@demandConstraint,options);
+
+    function [cinq, ceq] = demandConstraint(x)
+        % function used for fmincon
+        % x is the spectral efficiency of the demand
+        
+        db = demandRate/dse;
+        x_c = [backgroundEfficiency; dse; backgroundEfficiency];
+        x_f = [0; backgroundBandwidth/4+db/2; backgroundBandwidth/2+db];
+        x = [x_c; x_f];
+        cinq = nlcon(x, psd, t, Nspan, alpha, beta, gamma, Nase);
+        ceq = [];
+    end
+
+end
