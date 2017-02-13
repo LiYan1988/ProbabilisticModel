@@ -26,4 +26,4 @@ systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
 %% Input to nlcon
-Nreach = findReach(100, 1, 80, 15, systemParameters)
+Nreach = findReach(100, 1, 80, 15, systemParameters);

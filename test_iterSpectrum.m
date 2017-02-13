@@ -59,3 +59,8 @@ plot(bandwidthsNew2)
 %% test iterateSpectrumBatchGN.m
 bandwidthsIter = iterateSpectrumBatchGN(dataRates, distance, 2, systemParameters);
 plot(bandwidthsIter, '--')
+
+%% test updateSpectrumGN2.m
+[dse_opt, finalNoise] = updateSpectrumGN2(dataRates, distance, systemParameters);
+bandwidthsUpdate = dataRates./dse_opt;
+plot(bandwidthsUpdate, '-.')

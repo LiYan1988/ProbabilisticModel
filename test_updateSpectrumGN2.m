@@ -28,7 +28,9 @@ systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
 %% 
+gb = 10; % 10 GHz guardband
 Nuser = 5;
 dataRates = randi([30, 400], [Nuser, 1]);
+accumulateNoise = zeros(Nuser, 1);
 Nspan = 100;
-dse_opt = updateSpectrumGN2(dataRates, Nspan, systemParameters);
+[dse_opt, finalNoise] = updateSpectrumGN2(dataRates, Nspan, gb, accumulateNoise, systemParameters);
