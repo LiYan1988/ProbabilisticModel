@@ -32,17 +32,20 @@ systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
 %% 10 users, 100 Gbps
-Nsimu = 2e4;
+Nuser = 10;
+Nsimu = 1e3;
 distance = 5:100;
+seGNAll = zeros(Nsimu, length(distance), Nuser);
+noiseAll = zeros(Nsimu, length(distance), Nuser);
 seGN = zeros(Nsimu, length(distance));
 seAve = zeros(length(distance), 1);
 seStd = zeros(length(distance), 1);
-Nuser = 10;
 dataRates = randi([30, 400], [Nuser, Nsimu]);
 tic;
 for l=1:length(distance)
     for i=1:Nsimu
-        seGN(i, l) = seSingleLink(dataRates(:, i), distance(l), systemParameters, 'GN');
+        [seGNAll(i, l, :), noiseAll(i, l, :)] = updateSpectrumGN2(dataRates(:, i), distance(l), systemParameters);
+        seGN(i, l) = mean(seGNAll(i, l, :));
     end
     seAve(l) = mean(seGN(:, l));
     seStd(l) = std(seGN(:, l));
@@ -54,6 +57,6 @@ runtime = toc;
 figure; hold on; box on;
 errorbar(distance, seAve, seStd)
 xlabel('Link length (100 km)')
-ylabel('ESE')
-savefig('figures/singleLink10User2e4_SweepLength_RandomDataRate30-400.fig')
-save('data/singleLink10User2e4_SweepLength_RandomDataRate30-400.mat')
+ylabel('ESE (bit/Hz)')
+savefig('figures/singleLink10User1e3_SweepLength_RandomDataRate30-400.fig')
+save('data/singleLink10User1e3_SweepLength_RandomDataRate30-400.mat')

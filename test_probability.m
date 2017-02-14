@@ -1,4 +1,5 @@
 % test probability formula
+% won't continue Xu's approach
 clc;
 clear;
 close all;

@@ -9,7 +9,8 @@ beta = systemParameters.beta;
 gamma = systemParameters.gamma;
 Nase = systemParameters.Nase;
 
-bandwidths = bandwidths;
+bandwidths = bandwidths/100;
+dataRates = dataRates/100;
 demandRate = dataRates(idx);
 demandBandwidth = bandwidths(idx);
 backgroundRate = sum(dataRates)-demandRate;
@@ -19,7 +20,7 @@ backgroundEfficiency = backgroundRate/backgroundBandwidth;
 Nuser = 3;
 psd = 15*ones(Nuser, 1); % mW/THz
 demandEfficiency0 = demandRate/demandBandwidth; % initial spectral efficiency
-t = [backgroundRate/2; demandRate; backgroundRate/2]/100;
+t = [backgroundRate/2; demandRate; backgroundRate/2];
 
 funobj = @(x) -x;
 x0 = demandEfficiency0;

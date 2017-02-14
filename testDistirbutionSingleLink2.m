@@ -3,6 +3,8 @@
 
 % Only the link length is random variables
 
+% There are some problem with this simulation, the distribution is strange
+
 clc;
 clear;
 close all;
@@ -32,13 +34,14 @@ systemParameters.Nase = Nase;
 
 %% 10 users, 100 Gbps
 Nsimu = 1000;
-seGN = zeros(Nsimu, 1);
-seTR = zeros(Nsimu, 1);
 Nuser = 10;
+seGN = zeros(Nuser, Nsimu);
+noise = zeros(Nuser, Nsimu);
 dataRates = randi([100, 100], [Nuser, Nsimu]);
 distance = randi([5, 10], [1, Nsimu]);
 tic;
 for i=1:Nsimu
+    [seGN(:, i), noise(:, i)] = updateSpectrumGN2(dataRates(:, i), distance(i), systemParameters);
     seGN(i) = seSingleLink(dataRates(:, i), distance(i), systemParameters, 'GN');
 %     seTR(i) = seSingleLink(dataRates(:, i), distance(i), systemParameters, 'TR');
     if mod(i, 100)==0
@@ -50,7 +53,7 @@ runtime = toc;
 %%
 figure; hold on; box on;
 h = [];
-h(1) = histogram(seGN, 20, 'displayname', 'GN', 'normalization', 'probability');
+h(1) = histogram(mean(seGN, 1), 20, 'displayname', 'GN', 'normalization', 'probability');
 % h(2) = histogram(seTR, 'displayname', 'TR');
 legend(h)
 xlabel('Effective spectrum efficiency (bit/Hz)')

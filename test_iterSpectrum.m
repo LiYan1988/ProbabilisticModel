@@ -40,7 +40,7 @@ distance = 10;
 dse_opt = updateSpectrumGN(idx, dataRates, bandwidths, distance, systemParameters);
 
 %% test initilizeSpectrumTR.m
-Nuser = 10;
+Nuser = 3;
 dataRates = randi([30, 400], [Nuser, 1]);
 distance = 20;
 bandwidths = initilizeSpectrumTR(dataRates, distance);
@@ -51,16 +51,18 @@ bandwidthsNew1 = updateSpectrumBatchGN(bandwidthsNew, dataRates, distance, syste
 bandwidthsNew2 = updateSpectrumBatchGN(bandwidthsNew1, dataRates, distance, systemParameters);
 figure;
 hold on;
-plot(bandwidths)
-plot(bandwidthsNew)
-plot(bandwidthsNew1)
-plot(bandwidthsNew2)
+plot(bandwidths, 'displayname', 'TR', 'linewidth', 2)
+plot(bandwidthsNew, 'displayname', 'iteration 1', 'linewidth', 2)
+plot(bandwidthsNew1, 'displayname', 'iteration 2', 'linewidth', 2)
+plot(bandwidthsNew2, 'displayname', 'iteration 3', 'linewidth', 2)
 
 %% test iterateSpectrumBatchGN.m
 bandwidthsIter = iterateSpectrumBatchGN(dataRates, distance, 2, systemParameters);
-plot(bandwidthsIter, '--')
+plot(bandwidthsIter, '--', 'displayname', 'all iterations', 'linewidth', 2)
 
 %% test updateSpectrumGN2.m
 [dse_opt, finalNoise] = updateSpectrumGN2(dataRates, distance, systemParameters);
 bandwidthsUpdate = dataRates./dse_opt;
-plot(bandwidthsUpdate, '-.')
+plot(bandwidthsUpdate, '-.', 'displayname', 'one shot', 'linewidth', 2)
+
+legend('show')

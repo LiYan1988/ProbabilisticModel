@@ -33,4 +33,4 @@ Nuser = 5;
 dataRates = randi([30, 400], [Nuser, 1]);
 accumulateNoise = zeros(Nuser, 1);
 Nspan = 100;
-[dse_opt, finalNoise] = updateSpectrumGN2(dataRates, Nspan, gb, accumulateNoise, systemParameters);
+[dse_opt, finalNoise] = updateSpectrumGN2(dataRates, Nspan, systemParameters, gb, accumulateNoise);

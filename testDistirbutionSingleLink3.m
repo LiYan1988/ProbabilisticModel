@@ -31,15 +31,16 @@ systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
 %% 10 users, 100 Gbps
-Nsimu = 1000;
-seGN = zeros(Nsimu, 1);
-seTR = zeros(Nsimu, 1);
+Nsimu = 1e3;
 Nuser = 10;
+seGN = zeros(Nuser, Nsimu);
+noise = zeros(Nuser, Nsimu);
 dataRates = randi([30, 400], [Nuser, Nsimu]);
-distance = randi([30, 30], [1, Nsimu]);
+distance = randi([50, 50], [1, Nsimu]);
 tic;
 for i=1:Nsimu
-    seGN(i) = seSingleLink(dataRates(:, i), distance(i), systemParameters, 'GN');
+    [seGN(:, i), noise(:, i)] = updateSpectrumGN2(dataRates(:, i), distance(i), systemParameters);
+%     seGN(i) = seSingleLink(dataRates(:, i), distance(i), systemParameters, 'GN');
 %     seTR(i) = seSingleLink(dataRates(:, i), distance(i), systemParameters, 'TR');
     if mod(i, 100)==0
         disp(i)
@@ -48,12 +49,14 @@ end
 runtime = toc;
 
 %%
-figure; hold on; box on;
+figure1 = figure; hold on; box on;
 h = [];
-h(1) = histogram(seGN, 20, 'displayname', 'GN', 'normalization', 'probability');
+h(1) = histogram(mean(seGN, 1), 20, 'displayname', 'GN', 'normalization', 'probability');
 % h(2) = histogram(seTR, 'displayname', 'TR');
 legend(h)
 xlabel('Effective spectrum efficiency (bit/Hz)')
 ylabel('Probability')
-savefig('figures/singleLink10User1e3_Length30_RandomDataRate30-400.fig')
-save('data/singleLink10User1e3_Length30_RandomDataRate30-400.mat')
+figureName = sprintf('figures/singleLink10User1e3_Length%d_RandomDataRate30-400.fig', distance(1));
+savefig(figure1, figureName)
+dataName = sprintf('data/singleLink10User1e3_Length%d_RandomDataRate30-400.mat', distance(1));
+save(dataName)

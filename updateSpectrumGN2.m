@@ -42,7 +42,7 @@ finalNoise = calcNoise(dse_opt);
             x_f = [0; backgroundBandwidth/4+bw/2; backgroundBandwidth/2+bw]/100;
             x_in = [x_c; x_f];
             psd = psd0*ones(3, 1);
-            tmpNoise = accumulateNoise(j)*ones(3, 1);
+            tmpNoise = [0; accumulateNoise(j); 0];
             cinq((j-1)*5+1:j*5) = nlcon(x_in, psd, t, Nspan, alpha, beta, gamma, Nase, gb, tmpNoise);
         end
         ceq = [];
@@ -62,9 +62,14 @@ finalNoise = calcNoise(dse_opt);
             x_f = [0; backgroundBandwidth/4+bw/2; backgroundBandwidth/2+bw]/100;
             x_in = [x_c; x_f];
             psd = psd0*ones(3, 1);
-            tmpNoise = accumulateNoise(j)*ones(3, 1);
+            tmpNoise = [0; accumulateNoise(j); 0];
             tmp = nlcon(x_in, psd, t, Nspan, alpha, beta, gamma, Nase, gb, tmpNoise);
-            finalNoise(j) = tmp(2);
+            finalNoise(j) = (tmp(2)*1e-17+psd0*1e-15/Nspan)/snrfcn(x(j));
         end
     end
+end
+
+function y = snrfcn(x)
+% relaxed snr function
+y = 2.209*exp(0.3392*x)-0.6598;
 end
