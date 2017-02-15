@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings name="parallel" xmlns="urn:mathworks.matlab.settings" xsi:schemaLocation="urn:mathworks.matlab.settings settings.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <settings name="profiles">
+        <settings name="PBSProProfile_2013b" visible="true">
+            <key name="Description" visible="true">
+                <string>
+                    <value><![CDATA[fit.itc]]></value>
+                </string>
+            </key>
+            <key name="ProjectComponent" visible="true">
+                <string>
+                    <value><![CDATA[Copy_Of_pbsproconfig_nopreempt_2011bProjectComponent_Copy2]]></value>
+                </string>
+            </key>
+            <key name="SchedulerComponent" visible="true">
+                <string>
+                    <value><![CDATA[Copy_Of_pbsproconfig_nopreempt_2011bSchedulerComponent_Copy2]]></value>
+                </string>
+            </key>
+        </settings>
+    </settings>
+    <settings name="projectcomponents">
+        <settings name="Copy_Of_pbsproconfig_nopreempt_2011bProjectComponent_Copy2" visible="true">
+            <key name="AdditionalPaths" visible="true">
+                <string minArraySize="0" maxArraySize="0" undef="true">
+                </string>
+            </key>
+            <key name="AttachedFiles" visible="true">
+                <string minArraySize="0" maxArraySize="0" undef="true">
+                </string>
+            </key>
+            <key name="AutoAttachFiles" visible="true" anytype="true">
+                <bool>
+                    <value>0</value>
+                </bool>
+            </key>
+            <key name="CaptureDiary" visible="true">
+                <bool>
+                    <value>1</value>
+                </bool>
+            </key>
+            <key name="JobFinishedFcn" visible="true" anytype="true">
+            </key>
+            <key name="JobQueuedFcn" visible="true" anytype="true">
+            </key>
+            <key name="JobRunningFcn" visible="true" anytype="true">
+            </key>
+            <key name="JobTimeout" visible="true" anytype="true">
+            </key>
+            <key name="NumWorkersRange" visible="true">
+                <double minArraySize="0" maxArraySize="3">
+                    <value>2.0</value>
+                    <value>1.0</value>
+                    <value>16.0</value>
+                </double>
+            </key>
+            <key name="TaskFinishedFcn" visible="true" anytype="true">
+            </key>
+            <key name="TaskRunningFcn" visible="true" anytype="true">
+            </key>
+            <key name="TaskTimeout" visible="true" anytype="true">
+            </key>
+        </settings>
+    </settings>
+    <settings name="schedulercomponents">
+        <settings name="PBSPro" visible="true">
+            <settings name="Copy_Of_pbsproconfig_nopreempt_2011bSchedulerComponent_Copy2" visible="true">
+                <key name="ClusterMatlabRoot" visible="true">
+                    <string>
+                        <value><![CDATA[/common/matlab/R2013b/]]></value>
+                    </string>
+                </key>
+                <key name="CommunicatingJobWrapper" visible="true">
+                    <string>
+                        <value><![CDATA[/common/matlab/R2013b/toolbox/distcomp/bin/util/pbs/pbsParallelWrapper.sh]]></value>
+                    </string>
+                </key>
+                <key name="HasSharedFilesystem" visible="true">
+                    <bool>
+                        <value>1</value>
+                    </bool>
+                </key>
+                <key name="JobStorageLocation" visible="true">
+                    <string minArraySize="0" maxArraySize="0" undef="true">
+                    </string>
+                </key>
+                <key name="LicenseNumber" visible="true" anytype="true">
+                </key>
+                <key name="NumWorkers" visible="true">
+                    <double>
+                        <value>256.0</value>
+                    </double>
+                </key>
+                <key name="RcpCommand" visible="true">
+                    <string>
+                        <value><![CDATA[/usr/bin/scp]]></value>
+                    </string>
+                </key>
+                <key name="RequiresMathWorksHostedLicensing" visible="true" anytype="true">
+                </key>
+                <key name="ResourceTemplate" visible="true">
+                    <string>
+                        <value><![CDATA[-l select=^N^]]></value>
+                    </string>
+                </key>
+                <key name="RshCommand" visible="true">
+                    <string>
+                        <value><![CDATA[/uva/bin/ssh]]></value>
+                    </string>
+                </key>
+                <key name="SubmitArguments" visible="true" anytype="true">
+                </key>
+            </settings>
+        </settings>
+    </settings>
+</settings>

@@ -1,0 +1,27 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2013 The MathWorks, Inc.
+                    R2013b (8.2.0.701) 64-bit (glnxa64)
+                              August 13, 2013
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+Starting matlabpool using the 'local' profile ... [Warning: Found 14 pre-existing communicating job(s) created by pool that are
+running. You can use 'delete(myCluster.Jobs)' to remove all jobs created with
+profile local. To create 'myCluster' use 'myCluster = parcluster('local')'.] 
+[> In InteractiveClient>InteractiveClient.pRemoveOldJobs at 473
+  In InteractiveClient>InteractiveClient.start at 305
+  In Pool.Pool>iStartClient at 499
+  In Pool.Pool>Pool.hBuildPool at 412
+  In MatlabpoolHelper>MatlabpoolHelper.doOpen at 311
+  In MatlabpoolHelper>MatlabpoolHelper.doMatlabpool at 129
+  In matlabpool at 142] 
+connected to 8 workers.
+
+time =
+
+    4.2977
+
+Parallel pool using the 'local' profile is shutting down.
