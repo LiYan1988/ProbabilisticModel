@@ -50,7 +50,7 @@ for Nuser = 15:20:50
     tic;
     for l=1:length(distance)
         tmpDist = distance(l);
-        parfor i=1:Nsimu
+        for i=1:Nsimu
             [seGNAll(i, l, :), noiseAll(i, l, :)] = updateSpectrumGN2(dataRates(:, i), tmpDist, systemParameters);
             seGN(i, l) = mean(seGNAll(i, l, :));
         end

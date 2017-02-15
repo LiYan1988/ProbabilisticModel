@@ -8,7 +8,8 @@
 #SBATCH --account=optinetly6j
 
 module load matlab/R2016a
+#module load gurobi/6.5.1
 
 echo $TMPDIR
 
-matlab -nodesktop -r "parpool(10); pcalc1; exit" -logfile matlab_output2
+matlab -nodesktop -r "poolobj=parpool(10); test_cluster; delete(poolobj); exit" -logfile matlab_output
