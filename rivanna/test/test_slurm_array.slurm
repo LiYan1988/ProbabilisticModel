@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=10
-#SBATCH --time=00:01:00
+#SBATCH --time=01:00:00
 #SBATCH --output=test_%a.stdout
 #SBATCH --error=test_%a.stderr
 #SBATCH --partition=economy 
