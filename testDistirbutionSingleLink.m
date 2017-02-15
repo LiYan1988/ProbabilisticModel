@@ -67,11 +67,11 @@ for i=1:Nsimu
     end
 end
 runtime = toc;
-
+ese = sum(dataRates, 1)./sum(dataRates./seGN, 1);
 %%
 figure; hold on; box on;
 h = [];
-h(1) = histogram(mean(seGN, 1), 20, 'displayname', 'GN', 'normalization', 'probability');
+h(1) = histogram(ese, 20, 'displayname', 'GN', 'normalization', 'probability');
 % h(2) = histogram(seTR, 'displayname', 'TR');
 legend(h)
 xlabel('Effective spectrum efficiency (bit/Hz)')

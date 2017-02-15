@@ -53,25 +53,44 @@ figure3 = figure;
 axes3 = axes('Parent', figure3);
 hold(axes3,'on');
 box on; grid on;
+figure4 = figure;
+axes4 = axes('Parent', figure4);
+hold(axes4,'on');
+box on; grid on;
+figure5 = figure;
+axes5 = axes('Parent', figure5);
+hold(axes5,'on');
+box on; grid on;
 
 plotIdx = 6;
 plotSpan = plotIdx+4;
 h = [];
 p = [];
 o = [];
+n = [];
+r = [];
 k = 1;
 for Nuser = 5:5:50
     totalRate = (lb+ub)/2*Nuser;
     filename = sprintf('data/singleLink%dUser1e3_SweepLength_RandomDataRate30-400_FixedUserNumber.mat', Nuser);
     try
         load(filename)
+        noiseTemp = shiftdim(noiseAll, 1);
+        noiseTemp2 = zeros(size(noiseTemp, 1), size(noiseTemp, 2)*size(noiseTemp, 3));
+        for tmpdist=1:size(noiseTemp2, 1)
+            noiseTemp2(tmpdist, :) = reshape(noiseTemp(tmpdist, :, :), 1, []);
+        end
+        noiseAve = mean(noiseTemp2, 2);
+        noiseStd = std(noiseTemp2, [], 2);
         seAveMatrix(:, k) = seAve;
         seStdMatrix(:, k) = seStd;
         seMatrixAt10(:, k) = seGN(:, plotIdx);
         legendStr = sprintf('%d users', Nuser);
+        n(k) = errorbar(axes4, distance, noiseAve, noiseStd, 'displayname', legendStr);
         if mod(k, 2)==0
             p(k) = histogram(axes2, seMatrixAt10(:, k), linspace(min(seMatrixAt10(:, k)), max(seMatrixAt10(:, k)), 21), 'displayname', legendStr, 'normalization', 'probability');
             h(k) = errorbar(axes1, distance, seAveMatrix(:, k), seStdMatrix(:, k), 'displayname', legendStr);
+            r(k) = histogram(axes5, noiseTemp2(plotIdx,:), linspace(min(noiseTemp2(plotIdx,:)), max(noiseTemp2(plotIdx,:)), 21), 'displayname', legendStr, 'normalization', 'probability');
         end
         o(k) = plot(axes3, distance, seStdMatrix(:, k), 'displayname', legendStr);
         k = k+1;
@@ -97,8 +116,18 @@ ylabel(axes2, 'Probability')
 legend(axes3, 'show');
 xlabel(axes3, 'distance (100 km)')
 ylabel(axes3, 'ESE (bit/Hz)');
+legend(axes4, 'show', 'location', 'northwest');
+xlabel(axes4, 'distance (100 km)')
+ylabel(axes4, 'noise PSD (W/Hz)');
+legend(axes5, 'show');
+xlabel(axes5, 'noise PSD (W/Hz)');
+ylabel(axes5, 'Probability');
 
 figureName1 = sprintf('figures/singleLink%dUser1e3_SweepLength_RandomDataRate30-400_FixedUserNumber_DistancePlot.fig', Nuser);
 savefig(figure1, figureName1)
 figureName2 = sprintf('figures/singleLink%dUser1e3_SweepLength_RandomDataRate30-400_FixedUserNumber_HistogramPlotAt%dSpan.fig', Nuser, plotSpan);
 savefig(figure2, figureName2)
+figureName4 = sprintf('figures/singleLink%dUser1e3_SweepLength_RandomDataRate30-400_FixedUserNumber_NoiseDistancePlot.fig', Nuser);
+savefig(figure4, figureName4)
+figureName5 = sprintf('figures/singleLink%dUser1e3_SweepLength_RandomDataRate30-400_FixedUserNumber_NoiseHistogramAt%dSpan.fig', Nuser, plotSpan);
+savefig(figure5, figureName5)

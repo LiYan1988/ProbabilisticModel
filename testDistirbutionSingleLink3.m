@@ -36,7 +36,7 @@ Nuser = 10;
 seGN = zeros(Nuser, Nsimu);
 noise = zeros(Nuser, Nsimu);
 dataRates = randi([30, 400], [Nuser, Nsimu]);
-distance = randi([50, 50], [1, Nsimu]);
+distance = randi([5, 5], [1, Nsimu]);
 tic;
 for i=1:Nsimu
     [seGN(:, i), noise(:, i)] = updateSpectrumGN2(dataRates(:, i), distance(i), systemParameters);
