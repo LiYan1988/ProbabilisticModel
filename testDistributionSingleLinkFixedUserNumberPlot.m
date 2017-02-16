@@ -84,7 +84,8 @@ for Nuser = 5:5:50
         noiseStd = std(noiseTemp2, [], 2);
         seAveMatrix(:, k) = seAve;
         seStdMatrix(:, k) = seStd;
-        seMatrixAt10(:, k) = seGN(:, plotIdx);
+        ese = sum(dataRates, 1)./sum(dataRates./squeeze(seGNAll(:, plotIdx, :))', 1);
+        seMatrixAt10(:, k) = ese';
         legendStr = sprintf('%d users', Nuser);
         n(k) = errorbar(axes4, distance, noiseAve, noiseStd, 'displayname', legendStr);
         if mod(k, 2)==0
