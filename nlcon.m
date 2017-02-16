@@ -58,7 +58,7 @@ t_nl = pnl.*(sum(p_mat, 1).');
 
 
 % SNR constraints
-cinq_snr = accumulateNoise+t_ase+t_nl-x_psd/Nspan;
+cinq_snr = accumulateNoise.*psnr/Nspan+t_ase+t_nl-x_psd/Nspan;
 cinq_snr = cinq_snr*1e17; % rescale value of snr constraints
 
 
@@ -68,7 +68,7 @@ BD1 = BD1(1:Nuser-1, :);
 BD2 = sparse(diag(ones(Nuser, 1))-diag(ones(Nuser-1, 1), 1));
 BD2 = BD2(1:Nuser-1, :);
 % guardband = 0.1; % insert 10 GHz guard band between neighboring channels
-cinq_bd = 0.5*BD1*(t./x_c)+BD2*x_f+gb;
+cinq_bd = 0.5*BD1*(t./x_c)+BD2*x_f+gb/100;
 
 cinq = [cinq_snr; cinq_bd];
 

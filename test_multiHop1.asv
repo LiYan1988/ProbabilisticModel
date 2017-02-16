@@ -27,13 +27,12 @@ systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
-gb = 200; % the guardband 
+gb = 0; % the guardband 
 
 %% topology
 NodeList = [1; 2; 3; 4];
-NNodes = length(NodeList);
-NetworkCost = [[inf, 5, inf, inf]; [5, inf, 5, inf]; ...
-    [inf, 5, inf, 5]; [inf, inf, 5, inf]]; % unit is the number of spans
+NetworkCost = [[inf, 2, inf, inf]; [3, inf, 4, inf]; ...
+    [inf, 5, inf, 6]; [inf, inf, 7, inf]]; % unit is the number of spans
 NetworkConnectivity = 1-isinf(NetworkCost);
 tmpNetworkCost = NetworkConnectivity.*NetworkCost;
 tmpNetworkCost(isnan(tmpNetworkCost)) = 0;
@@ -104,7 +103,6 @@ end
 
 %% calculate noise based on bandwidths
 demandsNoise = zeros(Ndemands, 1);
-demandsSE = zeros(Ndemands, 1);
 for n=1:Ndemands
     noiseTemp = 0;
     % calculate noise on each link
@@ -117,12 +115,8 @@ for n=1:Ndemands
         demandsTemp = SetOfDemandsOnLink{linkIDTemp(l)};
         idx = ismember(n, demandsTemp);
         noiseVectorTemp = zeros(length(demandsTemp), 1);
-        noiseVectorTemp(idx) = noiseTemp;
+        noiseVectorTemp(idx
         dataRatesTemp = demandsMatrix(demandsTemp, 3);
-        [seTemp, nTemp] = updateSpectrumGN2(dataRatesTemp, linkLengthTemp(l), systemParameters, gb, noiseVectorTemp);
-        noiseTemp = nTemp(idx);
+        [seTemp, noiseTemp] = updateSpectrumGN2(dataRatesTemp, linkLengnthTemp, systemParameters, gb, );
     end
-    demandsNoise(n) = noiseTemp;
-    demandsSE(n) = seTemp(idx);
-    demandsBandwidths(n) = demandsMatrix(n, 3)/demandsSE(n);
 end

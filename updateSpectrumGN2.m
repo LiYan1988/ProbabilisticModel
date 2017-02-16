@@ -64,7 +64,7 @@ finalNoise = calcNoise(dse_opt);
             psd = psd0*ones(3, 1);
             tmpNoise = [0; accumulateNoise(j); 0];
             tmp = nlcon(x_in, psd, t, Nspan, alpha, beta, gamma, Nase, gb, tmpNoise);
-            finalNoise(j) = (tmp(2)*1e-17+psd0*1e-15/Nspan)/snrfcn(x(j));
+            finalNoise(j) = (tmp(2)*1e-17+psd0*1e-15/Nspan)/snrfcn(x(j))*Nspan;
         end
     end
 end
