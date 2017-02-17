@@ -1,4 +1,4 @@
-function [demandsBandwidths, demandsNoise, demandsSE] = iterateBWInNetwork(demandsBandwidths, TopologyStruct, DemandStruct, systemParameters, gb)
+function [demandsBandwidths, demandsNoise, demandsSE] = iterateBWInNetwork(demandsBandwidths, TopologyStruct, DemandStruct, systemParameters)
 % Calculate demand bandwidths iteratively
 
 NodeList = TopologyStruct.NodeList;

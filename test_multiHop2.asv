@@ -26,8 +26,7 @@ systemParameters.alpha = alpha;
 systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
-
-gb = 200; % the guardband 
+systemParameters.gb = 200; % the guardband 
 
 %% topology
 NodeList = [1; 2; 3; 4];
@@ -55,12 +54,18 @@ TopologyStruct.NetworkConnectivity = NetworkConnectivity;
 TopologyStruct.LinkList = LinkList;
 TopologyStruct.NLinks = NLinks;
 TopologyStruct.LinkListIDs = LinkListIDs;
-TopologyStruct.LinkLengths = LinkLeng;
+TopologyStruct.LinkLengths = LinkLengths;
+TopologyStruct.LinksTable = LinksTable;
 
 %% generate traffic demands
-Ndemands = 20;
-[demandsMatrix, demandsTable, SetOfDemandsOnLink] = ...
-    createTrafficDemands(NNodes, Ndemands);
+Ndemands = 100;
+DemandStruct = createTrafficDemands(TopologyStruct, Ndemands);
+
+demandsMatrix = DemandStruct.demandsMatrix;
+demandsTable = DemandStruct.demandsTable;
+SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
+demandPathLength = DemandStruct.demandPathLength;
+demandPaths = DemandStruct.demandPaths;
 
 %% calculate initial bandwidths using TR model
 demandsBandwidths = zeros(Ndemands, 1);
@@ -69,26 +74,10 @@ for n=1:Ndemands
 end
 
 %% calculate noise based on bandwidths
-demandsNoise = zeros(Ndemands, 1);
-demandsSE = zeros(Ndemands, 1);
-for n=1:Ndemands
-    noiseTemp = 0;
-    % calculate noise on each link
-    linkListTemp = [demandPaths{n}(1:end-1)', demandPaths{n}(2:end)'];
-    [~, linkIDTemp] = ismember(linkListTemp, LinkList, 'rows');
-    linkLengthTemp = LinkLengths(linkIDTemp); 
-    nLinkTemp = length(linkLengthTemp);
-    demandsOnLinkTemp = cell(nLinkTemp, 1);
-    for l=1:nLinkTemp
-        demandsTemp = SetOfDemandsOnLink{linkIDTemp(l)};
-        idx = ismember(n, demandsTemp);
-        noiseVectorTemp = zeros(length(demandsTemp), 1);
-        noiseVectorTemp(idx) = noiseTemp;
-        dataRatesTemp = demandsMatrix(demandsTemp, 3);
-        [seTemp, nTemp] = updateSpectrumGN2(dataRatesTemp, linkLengthTemp(l), systemParameters, gb, noiseVectorTemp);
-        noiseTemp = nTemp(idx);
-    end
-    demandsNoise(n) = noiseTemp;
-    demandsSE(n) = seTemp(idx);
-    demandsBandwidths(n) = demandsMatrix(n, 3)/demandsSE(n);
-end
+[demandsBandwidths1, demandsNoise1, demandsSE1] = ...
+    iterateBWInNetwork(demandsBandwidths, TopologyStruct, DemandStruct, ...
+    systemParameters);
+
+[demandsBandwidths2, demandsNoise2, demandsSE2] = ...
+    iterateBWInNetwork(demandsBandwidths1, TopologyStruct, DemandStruct, ...
+    systemParameters);

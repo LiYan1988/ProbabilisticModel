@@ -4,7 +4,7 @@ clc;
 clear;
 close all;
 
-rng(0);
+rng(312);
 
 %% Define fiber parameters
 alpha = 0.22; % dB/km, attenuation of fiber, NOTE: alpha is positive!
@@ -26,13 +26,13 @@ systemParameters.alpha = alpha;
 systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
-systemParameters.gb = 200; % the guardband 
+systemParameters.gb = 10; % the guardband 
 
 %% topology
 NodeList = [1; 2; 3; 4];
 NNodes = length(NodeList);
-NetworkCost = [[inf, 5, inf, inf]; [5, inf, 5, inf]; ...
-    [inf, 5, inf, 5]; [inf, inf, 5, inf]]; % unit is the number of spans
+NetworkCost = [[inf, 5, inf, inf]; [5, inf, 10, inf]; ...
+    [inf, 10, inf, 5]; [inf, inf, 5, inf]]; % unit is the number of spans
 NetworkConnectivity = 1-isinf(NetworkCost);
 tmpNetworkCost = NetworkConnectivity.*NetworkCost;
 tmpNetworkCost(isnan(tmpNetworkCost)) = 0;
@@ -58,7 +58,7 @@ TopologyStruct.LinkLengths = LinkLengths;
 TopologyStruct.LinksTable = LinksTable;
 
 %% generate traffic demands
-Ndemands = 20;
+Ndemands = 100;
 DemandStruct = createTrafficDemands(TopologyStruct, Ndemands);
 
 demandsMatrix = DemandStruct.demandsMatrix;
@@ -68,10 +68,22 @@ demandPathLength = DemandStruct.demandPathLength;
 demandPaths = DemandStruct.demandPaths;
 
 %% calculate initial bandwidths using TR model
-demandsBandwidths = zeros(Ndemands, 1);
-for n=1:Ndemands
-    demandsBandwidths(n) = initilizeSpectrumTR(demandsMatrix(n, 3), demandPathLength(n));
-end
+% demandsBandwidths = zeros(Ndemands, 1);
+% for n=1:Ndemands
+%     demandsBandwidths(n) = initilizeSpectrumTR(demandsMatrix(n, 3), demandPathLength(n));
+% end
 
 %% calculate noise based on bandwidths
-[demandsBandwidths, demandsNoise, demandsSE] = iterateBWInNetwork(demandsBandwidths, TopologyStruct, DemandStruct, systemParameters);
+% [demandsBandwidths1, demandsNoise1, demandsSE1] = ...
+%     iterateBWInNetwork(demandsBandwidths, TopologyStruct, DemandStruct, ...
+%     systemParameters);
+% 
+% [demandsBandwidths2, demandsNoise2, demandsSE2] = ...
+%     iterateBWInNetwork(demandsBandwidths1, TopologyStruct, DemandStruct, ...
+%     systemParameters);
+nIter = 2;
+tic;
+[demandsBandwidths, demandsNoise, demandsSE, HistoryStruct] = ...
+    solveBWNetwork(TopologyStruct, DemandStruct, ...
+    systemParameters, nIter);
+runtime = toc;
