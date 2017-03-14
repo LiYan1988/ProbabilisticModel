@@ -41,19 +41,11 @@ for n=1:Ndemands
     demandPaths{n} = shortestPath;
     demandPathLength(n) = pathLength;
     pathLinks = [shortestPath(1:end-1)', shortestPath(2:end)'];
-    pathLinksID = zeros(1, NLinks);
     for m=1:NLinks
         if ismember(LinkList(m,:), pathLinks, 'rows')
             demandsMatrix(n, m+3) = 1;
         end
     end
-end
-
-NumberOfDemandsOnLink = sum(demandsMatrix(:, 4:end), 1)';
-TotalDataRateOnLink = zeros(NLinks, 1);
-for m=1:NLinks
-    idxs = find(demandsMatrix(:, m+3));
-    TotalDataRateOnLink(m) = sum(demandsMatrix(idxs, 3));
 end
 
 SetOfDemandsOnLink = cell(NLinks, 1);
