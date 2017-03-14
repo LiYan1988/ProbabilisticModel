@@ -26,19 +26,19 @@ systemParameters.alpha = alpha;
 systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
-systemParameters.gb = 10; % the guardband
+systemParameters.gb = 10; % the guardband 
 systemParameters.freqMax = 4000; % max frequency in GHz
-systemParameters.psd = 15;
+systemParameters.psd = 15; 
 
 %% topology
 % NetworkCost = [[inf, 5, inf, inf]; [5, inf, 10, inf]; ...
 %     [inf, 10, inf, 5]; [inf, inf, 5, inf]]; % unit is the number of spans
 NetworkCost = [[inf, 5, inf, inf, inf, 6];...
-    [5, inf, 4, inf, 5, 3];...
-    [inf, 4, inf, 5, 3, inf];...
-    [inf, inf, 5, inf, 6, inf];...
-    [inf, 5, 3, 6, inf, 4];...
-    [6, 3, inf, inf, 4, inf]];
+               [5, inf, 4, inf, 5, 3];...
+               [inf, 4, inf, 5, 3, inf];...
+               [inf, inf, 5, inf, 6, inf];...
+               [inf, 5, 3, 6, inf, 4];...
+               [6, 3, inf, inf, 4, inf]];
 NNodes = size(NetworkCost, 1);
 NodeList = 1:NNodes;
 NetworkConnectivity = 1-isinf(NetworkCost);
@@ -86,13 +86,10 @@ demandPaths = DemandStruct.demandPaths;
 %     end
 % end
 NMonteCarlo = 1000;
-demandsFrequency = cell(NMonteCarlo, 1);
-demandsNoisePerLink = cell(NMonteCarlo, 1);
-for i=1:NMonteCarlo
-    demandsOrder = randperm(Ndemands);
-    [demandsFrequency{i}, demandsNoisePerLink{i}] = allocateOneByOne(...
-        systemParameters, TopologyStruct, DemandStruct, demandsOrder);
-end
+demandsOrder = randperm(Ndemands);
+[demandsFrequency, demandsNoisePerLink] = allocateOneByOne(...
+    systemParameters, TopologyStruct, DemandStruct, demandsOrder);
+
 %% test calculateNoise
 % Nuser = 10;
 % demandsBandwidth = 100*ones(Nuser, 1);
