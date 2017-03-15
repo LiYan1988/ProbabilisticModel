@@ -44,22 +44,6 @@ noise_xci = Nspan*mu*psd.*sum(p_mat, 2);
 noise_all = noise_ase+noise_sci+noise_xci;
 
 % estimate xci
-% psd_max = max(psd);
-% bd_max = max(x_b);
-% m = ceil(Nuser/2);
-% x_b_sort = sort(x_b, 'descend');
-% x_b_sort = [0; x_b_sort(1:m-1)];
-% denom = repmat(x_b/2+gb, 1, m)+repmat(x_b_sort'+gb, Nuser, 1);
-% numer = repmat(x_b/2+gb+bd_max, 1, m)+repmat(x_b_sort'+gb, Nuser, 1);
-%
-% log_mat = log(numer./denom);
-% noise_xci_ub = 2*mu*Nspan*psd_max^3*sum(log_mat, 2);
-% if mod(Nuser, 2)==0
-%     noise_xci_ub = 2*mu*Nspan*psd_max^3*sum(log_mat, 2);
-% else
-%     noise_xci_ub = 2*mu*Nspan*psd_max^3*sum(log_mat(:, 1:end-1), 2);
-%     noise_xci_ub = noise_xci_ub+mu*Nspan*psd_max^3*log_mat(:, end);
-% end
 psd_max = max(psd);
 bandwidth_total = sum(x_b);
 noise_xci_ub = 2*mu*Nspan*psd_max^3*log((bandwidth_total+2*gb)./(x_b+2*gb));

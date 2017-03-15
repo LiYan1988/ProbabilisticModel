@@ -1,21 +1,16 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
-    Ndemands, randomSeed, DataRateLowerBound, DataRateUpperBound, ...
-    distribution)
+    Ndemands, DataRateLowerBound, DataRateUpperBound, distribution)
 % create traffic demands for a network
 
-if nargin<6
+if nargin<5
     distribution = 'uniform';
 end
 
-if nargin<5
+if nargin<4
     DataRateLowerBound = 30;
     DataRateUpperBound = 100;
 end
 
-if nargin<3
-    randomSeed = 0;
-end
-rng(randomSeed);
 
 NodeList = TopologyStruct.NodeList;
 NNodes = TopologyStruct.NNodes;
@@ -82,3 +77,10 @@ DemandStruct.demandsTable = demandsTable;
 DemandStruct.SetOfDemandsOnLink = SetOfDemandsOnLink;
 DemandStruct.demandPathLength = demandPathLength;
 DemandStruct.demandPaths = demandPaths;
+DemandStruct.distribution = distribution;
+DemandStruct.distributionParameter1 = DataRateLowerBound;
+DemandStruct.distributionParameter2 = DataRateUpperBound;
+DemandStruct.NumberOfDemandsOnLink = zeros(NLinks, 1);
+for i=1:NLinks
+    DemandStruct.NumberOfDemandsOnLink(i) = length(SetOfDemandsOnLink{i});
+end

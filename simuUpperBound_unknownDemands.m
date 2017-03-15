@@ -27,7 +27,7 @@ systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 systemParameters.gb = 13; % the guardband
-systemParameters.freqMax = 8000; % max frequency in GHz
+systemParameters.freqMax = 16000; % max frequency in GHz
 systemParameters.psd = 15;
 
 %% topology
@@ -72,82 +72,84 @@ TopologyStruct.LinkLengths = LinkLengths;
 TopologyStruct.LinksTable = LinksTable;
 
 %% generate traffic demands
-Ndemands = 500;
-randomSeed = 4249;
+Ndemands = 250;
+distributionName = 'normal';
+p1 = 30;
+p2 = 100;
 % normal
-% DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, randomSeed, 200, 40, 'normal');
+DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
+    p1, p2, distributionName);
 % uniform
-DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, randomSeed, 30, 400, 'uniform');
+% DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, randomSeed, 30, 400, 'uniform');
 
 demandsMatrix = DemandStruct.demandsMatrix;
 demandsTable = DemandStruct.demandsTable;
 SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
 demandPathLength = DemandStruct.demandPathLength;
 demandPaths = DemandStruct.demandPaths;
+NumberOfDemandsOnLink = DemandStruct.NumberOfDemandsOnLink;
+
+
+%%
+Nsamples = 10000;
+SampleNoise = sampleNoise(systemParameters, TopologyStruct, ...
+    DemandStruct, Nsamples);
 
 %% calculate noise based on bandwidths
-NMonteCarlo = 2000;
-demandsFrequency = zeros(Ndemands, 3, NMonteCarlo);
-demandsNoiseXCIPerLink = zeros(Ndemands, NLinks, NMonteCarlo);
-demandsNoiseXCI = zeros(Ndemands, NMonteCarlo);
-demandsNoiseALL = zeros(Ndemands, NMonteCarlo);
-demandsNoiseXCIUB = zeros(Ndemands, NMonteCarlo);
-demandsNoiseXCIUBPerLink = zeros(Ndemands, NLinks, NMonteCarlo);
-demandsNoiseALLUB = zeros(Ndemands, NMonteCarlo);
-parfor i=1:NMonteCarlo
-    demandsOrder = randperm(Ndemands);
-    [demandsFrequency(:, :, i), noiseTemp] = ...
-        allocateOneByOne(systemParameters, TopologyStruct, ...
-        DemandStruct, demandsOrder);
-    if i>1
-        demandsNoisePerLink(i) = noiseTemp;
-    else
-        demandsNoisePerLink = noiseTemp;
-    end
-    demandsNoiseXCIPerLink(:, :, i) = noiseTemp.XCI;
-    demandsNoiseXCI(:, i) = sum(noiseTemp.XCI, 2);
-    demandsNoiseALL(:, i) = sum(noiseTemp.ALL, 2);
-    demandsNoiseXCIUB(:, i) = sum(noiseTemp.XCIUB, 2);
-    demandsNoiseXCIUBPerLink(:, :, i) = noiseTemp.XCIUB;
-    demandsNoiseALLUB(:, i) = sum(noiseTemp.ALLUB, 2);
-end
+NMonteCarlo = 1000;
+demandsNoise = simulateOneByOne(systemParameters, TopologyStruct, ...
+    DemandStruct, NMonteCarlo);
 
-demandsNoise = struct();
-demandsNoise.XCIPerLink = demandsNoiseXCIPerLink;
-demandsNoise.XCI = demandsNoiseXCI;
-demandsNoise.ALL = demandsNoiseALL;
-demandsNoise.XCIUB = demandsNoiseXCIUB;
-demandsNoise.XCIUBPerLink = demandsNoiseXCIUBPerLink;
-demandsNoise.ALLUB = demandsNoiseALLUB;
+%% Plot
+close all;
+clc;
 
-%%
-idxDemand = 44;
-idxLink = 33;
-filename = 'sample';
-[ALL, XCI, XCIUB, XCIPerLink, XCIUBPerLink] = ...
-    hisogramNoiseDistributionDemandLink(idxDemand, idxLink, ...
-    demandsNoise, filename, 15);
+sparseDemandMatrix = sparse(demandsMatrix(:, 4:end));
+[idxDemands, idxLinks, ~] = find(sparseDemandMatrix);
+r = randi([1, length(idxDemands)]);
+idxDemand = idxDemands(r);
+idxLink = idxLinks(r);
 
-%%
-clc
-close all
-histogram(XCIPerLink, 'normalization', 'probability')
+% Monte Carlo
+demandsNoiseXCIPerLink = demandsNoise.XCIPerLink;
+demandsNoiseXCI = demandsNoise.XCI;
+demandsNoiseALL = demandsNoise.ALL;
+demandsNoiseXCIUB = demandsNoise.XCIUB;
+demandsNoiseXCIUBPerLink = demandsNoise.XCIUBPerLink;
+demandsNoiseALLUB = demandsNoise.ALLUB;
+
+ALL = demandsNoiseALL(idxDemand, :);
+XCI = demandsNoiseXCI(idxDemand, :);
+XCIUB = demandsNoiseXCIUB(idxDemand, :);
+XCIUBPerLink = squeeze(demandsNoiseXCIUBPerLink(idxDemand, idxLink, :));
+XCIPerLink = squeeze(demandsNoiseXCIPerLink(idxDemand, idxLink, :));
+ALLUB = demandsNoiseALLUB(idxDemand, :);
+
+ALL(ALL==0) = [];
+XCI(XCI==0) = [];
+XCIUB(XCIUB==0) = [];
+XCIUBPerLink(XCIUBPerLink==0) = [];
+XCIPerLink(XCIPerLink==0) = [];
+ALLUB(ALLUB==0) = [];
+
+
+% Sample Noise
+sampleNoiseXCIPerLink = SampleNoise.XCIPerLink;
+sampleNoiseSCIPerLink = SampleNoise.SCIPerLink;
+sampleNoiseNLIPerLink = sampleNoiseXCIPerLink+sampleNoiseSCIPerLink;
+sampleXCI = squeeze(sampleNoiseXCIPerLink(idxDemand, idxLink, :));
+sampleSCI = squeeze(sampleNoiseSCIPerLink(idxDemand, idxLink, :));
+sampleNLI = squeeze(sampleNoiseNLIPerLink(idxDemand, idxLink, :));
+
+%
 hold on;
-plot([max(XCIUBPerLink), max(XCIUBPerLink)], [0, 0.15], 'linewidth', 2)
+histogram(XCIPerLink, 'normalization', 'probability', 'displayname', 'simulation')
+histogram(sampleXCI, 'normalization', 'probability', 'displayname', 'upper bound')
 grid on;
+titleName = sprintf('demand %d, link %d', idxDemand, idxLink);
+title(titleName)
 xlabel('$G^{NLI}_{i,l}$ ($\mu$W/THz)','Interpreter','LaTex', 'fontsize', 14)
 ylabel('Probability')
+legend('show')
 
-pathName = 'sample2';
-set(gca, 'plotboxaspectratio', [7, 4, 1])
-set(gca,'position',[0.1 -0 0.85 1],'units','normalized')
-filename = sprintf('figures2/%s-noise-total.fig', pathName);
-savefig(filename)
-filename = sprintf('figures2/%s-noise-total.png', pathName);
-rez=600; %resolution (dpi) of final graphic
-f=gcf; %f is the handle of the figure you want to export
-figpos=getpixelposition(f); %dont need to change anything here
-resolution=get(0,'ScreenPixelsPerInch'); %dont need to change anything here
-set(f,'paperunits','inches','papersize',figpos(3:4)/resolution,'paperposition',[0 0 figpos(3:4)/resolution]); %dont need to change anything here
-print(f,filename,'-dpng',['-r',num2str(rez)],'-opengl') %save file 
 
