@@ -6,6 +6,7 @@ function [demandsFrequency, demandsNoisePerLink] = allocateOneByOne(...
 %
 %
 
+% extract parameters
 alpha = systemParameters.alpha;
 beta = systemParameters.beta;
 gamma = systemParameters.gamma;
@@ -31,6 +32,7 @@ demandPathLength = DemandStruct.demandPathLength;
 demandPaths = DemandStruct.demandPaths;
 Ndemands = size(demandsMatrix, 1);
 
+% allocate demands one by one
 demandsFrequency = zeros(Ndemands, 3);
 frequencySlotsAvailability = ones(freqMax, NLinks); % 1 is usable
 for i=1:Ndemands
@@ -38,11 +40,7 @@ for i=1:Ndemands
     [~, linkUsed, ~] = find(demandsMatrix(idx, 4:end));
     temp1 = ones(freqMax, 1);
     for j=1:length(linkUsed)
-        try
         temp1 = temp1.*frequencySlotsAvailability(:, linkUsed(j));
-        catch
-            disp();
-        end
     end
     temp2 = [0; temp1; 0];
     temp2 = diff(temp2);
@@ -58,33 +56,50 @@ for i=1:Ndemands
             run_start(run_idx)+demandsMatrix(idx, 3)-1+gb, ...
             linkUsed(j)) = 0;
     end
-    demandsFrequency(i, 1) = run_start(run_idx)-1+demandsMatrix(idx, 3)/2;
-    demandsFrequency(i, 2) = run_start(run_idx)-1;
-    demandsFrequency(i, 3) = run_start(run_idx)-1+demandsMatrix(idx, 3);
+    demandsFrequency(idx, 1) = run_start(run_idx)-1+demandsMatrix(idx, 3)/2;
+    demandsFrequency(idx, 2) = run_start(run_idx)-1;
+    demandsFrequency(idx, 3) = run_start(run_idx)-1+demandsMatrix(idx, 3);
 end
 
+% calculate noise
 demandsNoisePerLinkASE = zeros(Ndemands, NLinks);
 demandsNoisePerLinkSCI = zeros(Ndemands, NLinks);
 demandsNoisePerLinkXCI = zeros(Ndemands, NLinks);
 demandsNoisePerLinkALL = zeros(Ndemands, NLinks);
+demandsNoisePerLinkXCIUB = zeros(Ndemands, NLinks);
+demandsNoisePerLinkALLUB = zeros(Ndemands, NLinks);
 for i=1:NLinks
     demandsOnLink = SetOfDemandsOnLink{i};
+    if isempty(demandsOnLink)
+        continue;
+    end
+    for j=1:length(demandsOnLink)
+        if demandsFrequency(demandsOnLink(j), 3)==0
+            demandsOnLink(j) = -1;
+        end
+    end
+    demandsOnLink(demandsOnLink==-1) = [];
     if isempty(demandsOnLink)
         continue;
     end
     demandsCenterFrequency = demandsFrequency(demandsOnLink, 1);
     demandsBandwidth = demandsMatrix(demandsOnLink, 3);
     demandsPSD = psd*ones(length(demandsOnLink), 1);
-    [noise_all, noise_sci, noise_xci, noise_ase] = calculateNoise(...
+    [noise_all, noise_sci, noise_xci, noise_ase, noise_xci_ub] = calculateNoise(...
         demandsBandwidth, demandsCenterFrequency, demandsPSD, ...
-        LinkLengths(i), alpha, beta, gamma, Nase);
+        LinkLengths(i), alpha, beta, gamma, Nase, gb);
     demandsNoisePerLinkALL(demandsOnLink, i) = noise_all;
     demandsNoisePerLinkASE(demandsOnLink, i) = noise_ase;
     demandsNoisePerLinkSCI(demandsOnLink, i) = noise_sci;
     demandsNoisePerLinkXCI(demandsOnLink, i) = noise_xci;
+    demandsNoisePerLinkXCIUB(demandsOnLink, i) = noise_xci_ub;
+    demandsNoisePerLinkALLUB(demandsOnLink, i) = ...
+        noise_ase+noise_sci+noise_xci_ub;
 end
 demandsNoisePerLink = struct();
 demandsNoisePerLink.ASE = demandsNoisePerLinkASE;
 demandsNoisePerLink.SCI = demandsNoisePerLinkSCI;
 demandsNoisePerLink.XCI = demandsNoisePerLinkXCI;
 demandsNoisePerLink.ALL = demandsNoisePerLinkALL;
+demandsNoisePerLink.XCIUB = demandsNoisePerLinkXCIUB;
+demandsNoisePerLink.ALLUB = demandsNoisePerLinkALLUB;

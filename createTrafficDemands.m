@@ -1,10 +1,15 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
-    Ndemands, randomSeed, DataRateLowerBound, DataRateUpperBound)
+    Ndemands, randomSeed, DataRateLowerBound, DataRateUpperBound, ...
+    distribution)
 % create traffic demands for a network
+
+if nargin<6
+    distribution = 'uniform';
+end
 
 if nargin<5
     DataRateLowerBound = 30;
-    DataRateUpperBound = 400;
+    DataRateUpperBound = 100;
 end
 
 if nargin<3
@@ -28,8 +33,14 @@ NodePairs = [NodePairs; [NodePairs(:, 2), NodePairs(:, 1)]];
 NodePairs = sortrows(NodePairs);
 
 [demandSourceDestinationPairs, ~] = datasample(NodePairs, Ndemands, 1);
-demandDataRate = randi([DataRateLowerBound, DataRateUpperBound], ...
-    [Ndemands, 1]);
+if strcmp(distribution, 'uniform')
+    demandDataRate = randi([DataRateLowerBound, DataRateUpperBound], ...
+        [Ndemands, 1]);
+elseif strcmp(distribution, 'normal')
+    % DataRateLowerBound is mean, DataRateUpperBound is std
+    demandDataRate = round(normrnd(DataRateLowerBound, DataRateUpperBound, ...
+        [Ndemands, 1]));
+end
 demands = [demandSourceDestinationPairs, demandDataRate];
 
 demandsMatrix = zeros(Ndemands, NLinks+3);
