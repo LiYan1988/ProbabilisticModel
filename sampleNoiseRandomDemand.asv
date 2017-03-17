@@ -1,5 +1,5 @@
-function [ SampleNoise ] = sampleNoise(systemParameters, ...
-    TopologyStruct, DemandStruct, Nsamples)
+function [ SampleNoise ] = sampleNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters)
 % Sample noise for all demands on each link according to (3) in the
 % document
 %
@@ -11,6 +11,16 @@ function [ SampleNoise ] = sampleNoise(systemParameters, ...
 % mu: 7.58e-7 (muW/GHz)^(-2)
 % rho: 2.11e-3 (GHz)^(-2)
 % Nase: 3.58e-2 (muW/GHz)
+
+p1 = SimulationParameters.p1;
+p2 = SimulationParameters.p2;
+ndmin = SimulationParameters.ndmin;
+ndmax = SimulationParameters.ndmax;
+distributionName = SimulationParameters.distributionName;
+NMonteCarlo = SimulationParameters.NMonteCarlo;
+Repeat = SimulationParameters.Repeat;
+Ndemands = SimulationParameters.Ndemands;
+Nsamples = SimulationParameters.Nsamples;
 
 %% extract parameters
 alpha = systemParameters.alpha;
@@ -31,6 +41,16 @@ LinkListIDs = TopologyStruct.LinkListIDs;
 LinkLengths = TopologyStruct.LinkLengths;
 LinksTable = TopologyStruct.LinksTable;
 
+% change units
+mu = 3*gamma^2/(2*pi*alpha*abs(beta));
+rho = pi^2*abs(beta)/(2*alpha);
+mu = mu*1e-30;
+rho = rho*1e18;
+Nase = Nase*1e15;
+
+%%
+DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
+    p1, p2, distributionName, ndmin, ndmax);
 demandsMatrix = DemandStruct.demandsMatrix;
 demandsTable = DemandStruct.demandsTable;
 SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
@@ -42,19 +62,16 @@ p1 = DemandStruct.distributionParameter1;
 p2 = DemandStruct.distributionParameter2;
 Ndemands = size(demandsMatrix, 1);
 
-% change units
-mu = 3*gamma^2/(2*pi*alpha*abs(beta));
-rho = pi^2*abs(beta)/(2*alpha);
-mu = mu*1e-30;
-rho = rho*1e18;
-Nase = Nase*1e15;
-
 %% Sample from distributions
-sampleNoiseALLPerLink = zeros(Nsamples, NLinks, Ndemands);
-sampleNoiseNLIPerLink = zeros(Nsamples, NLinks, Ndemands);
-sampleNoiseXCIPerLink = zeros(Nsamples, NLinks, Ndemands);
-sampleNoiseSCIPerLink = zeros(Nsamples, NLinks, Ndemands);
-% sampleNoiseNLIPerLink = cell(Ndemands, 1);
+sampleNoiseALLLink = zeros(Nsamples, NLinks);
+sampleNoiseNLILink = zeros(Nsamples, NLinks);
+sampleNoiseXCILink = zeros(Nsamples, NLinks);
+sampleNoiseSCILink = zeros(Nsamples, NLinks);
+for i=1:NLinks
+    
+end
+
+
 for i=1:Ndemands
     linkUsed = demandsMatrix(i, 4:end);
     tmpSCI = zeros(Nsamples, NLinks);
@@ -73,7 +90,7 @@ for i=1:Ndemands
         % sample the total bandwidth
         Btotal(:, j) = sampleSumDistribution(distributionName, p1, p2, ...
             NumberOfDemandsOnLink(j)-1, Nsamples);
-        % sample XCI 
+        % sample XCI
         tmpXCI(:, j) = 2*mu*tmpLength*psd^3*log((Btotal(:, j)+Bi+2*gb)./....
             (Bi+2*gb));
         % sample ASE

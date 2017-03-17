@@ -27,7 +27,7 @@ systemParameters.beta = beta;
 systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 systemParameters.gb = 13; % the guardband
-systemParameters.freqMax = 16000; % max frequency in GHz
+systemParameters.freqMax = 160000; % max frequency in GHz
 systemParameters.psd = 15;
 
 %% topology
@@ -72,34 +72,37 @@ TopologyStruct.LinkLengths = LinkLengths;
 TopologyStruct.LinksTable = LinksTable;
 
 %% generate traffic demands
-Ndemands = 250;
+Ndemands = 2;
 distributionName = 'normal';
 p1 = 150;
 p2 = 20;
-% normal
-DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
-    p1, p2, distributionName);
-% uniform
-% DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, randomSeed, 30, 400, 'uniform');
-
-demandsMatrix = DemandStruct.demandsMatrix;
-demandsTable = DemandStruct.demandsTable;
-SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
-demandPathLength = DemandStruct.demandPathLength;
-demandPaths = DemandStruct.demandPaths;
-NumberOfDemandsOnLink = DemandStruct.NumberOfDemandsOnLink;
-
-
-%%
-Nsamples = 10000;
-SampleNoise = sampleNoise(systemParameters, TopologyStruct, ...
-    DemandStruct, Nsamples);
-
-%% calculate noise based on bandwidths
+ndprob=0.8;
+ndmax=2;
 NMonteCarlo = 1000;
-demandsNoise = simulateOneByOne(systemParameters, TopologyStruct, ...
-    DemandStruct, NMonteCarlo);
+Repeat = 100;
+Nsamples = 1e6;
 
+SimulationParameters = struct();
+SimulationParameters.p1 = p1;
+SimulationParameters.p2 = p2;
+SimulationParameters.ndprob = ndprob;
+SimulationParameters.ndmax = ndmax;
+SimulationParameters.distributionName = distributionName;
+SimulationParameters.NMonteCarlo = NMonteCarlo;
+SimulationParameters.Repeat = Repeat;
+SimulationParameters.Ndemands = Ndemands;
+SimulationParameters.Nsamples = Nsamples;
+
+%% Monte Carlo
+tic
+demandsNoise = simulateNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters);
+runtimeMonteCarlo = toc;
+%% Sample noise
+tic
+SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters);
+runtimeSample = toc;
 %% Plot XCI per demand per link
 % 187, 11; 237, 21; 246, 18; 70, 39; 179, 45
 % close all;
@@ -169,68 +172,68 @@ demandsNoise = simulateOneByOne(systemParameters, TopologyStruct, ...
 % legend('show')
 
 %% Plot XCI per link
-close all;
-idxLink = 25;
-figure
-hold on;
-grid on;
-box on;
-histogram(demandsNoise.linkNLI(idxLink, :), 20, 'normalization', 'probability', 'displayname', 'simulation', 'edgecolor', 'none')
-histogram(SampleNoise.linkNLI(idxLink, :), 20, 'normalization', 'probability', 'displayname', 'upper bound', 'edgecolor', 'none')
-titleName = sprintf('link %d', idxLink);
-title(titleName)
-xlabel('$G^{NLI}_{i,l}$ ($\mu$W/THz)', 'Interpreter','LaTex', 'fontsize', 14)
-ylabel('Probability', 'fontsize', 14)
-set(gca, 'FontSize', 12)
-set(gca, 'plotboxaspectratio', [7, 4, 1])
-set(gca,'position',[0.12 -0 0.85 1],'units','normalized')
-h = legend('show', 'location', 'north');
-h.FontSize = 12;
-
-pathName = 'LinkDistribution';
-if ~isempty(pathName)
-    filename = sprintf('figures2/%s-%d.fig', pathName, idxLink);
-    savefig(filename)
-    filename = sprintf('figures2/%s-%d.png', pathName, idxLink);
-    rez=600; %resolution (dpi) of final graphic
-    f=gcf; %f is the handle of the figure you want to export
-    figpos=getpixelposition(f); %dont need to change anything here
-    resolution=get(0,'ScreenPixelsPerInch'); %dont need to change anything here
-    set(f,'paperunits','inches','papersize',figpos(3:4)/resolution,'paperposition',[0 0 figpos(3:4)/resolution]); %dont need to change anything here
-    print(f,filename,'-dpng',['-r',num2str(rez)],'-opengl') %save file
-end
-
-%% link distribution averages
-close all;
-sampleLinkNLIave = mean(SampleNoise.linkALL, 2);
-sampleLinkNLIstd = std(SampleNoise.linkALL, 0, 2);
-simulationLinkNLIave = mean(demandsNoise.linkALL, 2);
-simulationLinkNLIstd = std(demandsNoise.linkALL, 0, 2);
-figure;
-hold on;
-box on;
-grid on;
-% errorbar(simulationLinkNLIave, sampleLinkNLIstd, 'displayname', 'simulation mean')
-% errorbar(sampleLinkNLIave, simulationLinkNLIstd, 'displayname', 'upper bound mean')
-plot(simulationLinkNLIave, 'displayname', 'simulation mean', 'linewidth', 1.5)
-plot(sampleLinkNLIave, 'displayname', 'upper bound mean', 'linewidth', 1.5)
-h = legend('show');
-h.FontSize = 12;
-set(gca, 'plotboxaspectratio', [7, 4, 1])
-set(gca,'position',[0.1 -0 0.85 1],'units','normalized')
-xlabel('Link index', 'fontsize', 14)
-ylabel('PSD (\muW/GHz)', 'fontsize', 14)
-set(gca, 'FontSize', 12)
-
-pathName = 'LinkALLAve';
-if ~isempty(pathName)
-    filename = sprintf('figures2/%s.fig', pathName);
-    savefig(filename)
-    filename = sprintf('figures2/%s.png', pathName);
-    rez=600; %resolution (dpi) of final graphic
-    f=gcf; %f is the handle of the figure you want to export
-    figpos=getpixelposition(f); %dont need to change anything here
-    resolution=get(0,'ScreenPixelsPerInch'); %dont need to change anything here
-    set(f,'paperunits','inches','papersize',figpos(3:4)/resolution,'paperposition',[0 0 figpos(3:4)/resolution]); %dont need to change anything here
-    print(f,filename,'-dpng',['-r',num2str(rez)],'-opengl') %save file
-end
+% close all;
+% idxLink = 25;
+% figure
+% hold on;
+% grid on;
+% box on;
+% histogram(demandsNoise.linkNLI(idxLink, :), 20, 'normalization', 'probability', 'displayname', 'simulation', 'edgecolor', 'none')
+% histogram(SampleNoise.linkNLI(idxLink, :), 20, 'normalization', 'probability', 'displayname', 'upper bound', 'edgecolor', 'none')
+% titleName = sprintf('link %d', idxLink);
+% title(titleName)
+% xlabel('$G^{NLI}_{i,l}$ ($\mu$W/THz)', 'Interpreter','LaTex', 'fontsize', 14)
+% ylabel('Probability', 'fontsize', 14)
+% set(gca, 'FontSize', 12)
+% set(gca, 'plotboxaspectratio', [7, 4, 1])
+% set(gca,'position',[0.12 -0 0.85 1],'units','normalized')
+% h = legend('show', 'location', 'north');
+% h.FontSize = 12;
+% 
+% pathName = 'LinkDistribution';
+% if ~isempty(pathName)
+%     filename = sprintf('figures2/%s-%d.fig', pathName, idxLink);
+%     savefig(filename)
+%     filename = sprintf('figures2/%s-%d.png', pathName, idxLink);
+%     rez=600; %resolution (dpi) of final graphic
+%     f=gcf; %f is the handle of the figure you want to export
+%     figpos=getpixelposition(f); %dont need to change anything here
+%     resolution=get(0,'ScreenPixelsPerInch'); %dont need to change anything here
+%     set(f,'paperunits','inches','papersize',figpos(3:4)/resolution,'paperposition',[0 0 figpos(3:4)/resolution]); %dont need to change anything here
+%     print(f,filename,'-dpng',['-r',num2str(rez)],'-opengl') %save file
+% end
+% 
+% %% link distribution averages
+% close all;
+% sampleLinkNLIave = mean(SampleNoise.linkALL, 2);
+% sampleLinkNLIstd = std(SampleNoise.linkALL, 0, 2);
+% simulationLinkNLIave = mean(demandsNoise.linkALL, 2);
+% simulationLinkNLIstd = std(demandsNoise.linkALL, 0, 2);
+% figure;
+% hold on;
+% box on;
+% grid on;
+% % errorbar(simulationLinkNLIave, sampleLinkNLIstd, 'displayname', 'simulation mean')
+% % errorbar(sampleLinkNLIave, simulationLinkNLIstd, 'displayname', 'upper bound mean')
+% plot(simulationLinkNLIave, 'displayname', 'simulation mean', 'linewidth', 1.5)
+% plot(sampleLinkNLIave, 'displayname', 'upper bound mean', 'linewidth', 1.5)
+% h = legend('show');
+% h.FontSize = 12;
+% set(gca, 'plotboxaspectratio', [7, 4, 1])
+% set(gca,'position',[0.1 -0 0.85 1],'units','normalized')
+% xlabel('Link index', 'fontsize', 14)
+% ylabel('PSD (\muW/GHz)', 'fontsize', 14)
+% set(gca, 'FontSize', 12)
+% 
+% pathName = 'LinkALLAve';
+% if ~isempty(pathName)
+%     filename = sprintf('figures2/%s.fig', pathName);
+%     savefig(filename)
+%     filename = sprintf('figures2/%s.png', pathName);
+%     rez=600; %resolution (dpi) of final graphic
+%     f=gcf; %f is the handle of the figure you want to export
+%     figpos=getpixelposition(f); %dont need to change anything here
+%     resolution=get(0,'ScreenPixelsPerInch'); %dont need to change anything here
+%     set(f,'paperunits','inches','papersize',figpos(3:4)/resolution,'paperposition',[0 0 figpos(3:4)/resolution]); %dont need to change anything here
+%     print(f,filename,'-dpng',['-r',num2str(rez)],'-opengl') %save file
+% end

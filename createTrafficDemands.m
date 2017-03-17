@@ -1,6 +1,14 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
-    Ndemands, DataRateLowerBound, DataRateUpperBound, distribution)
+    Ndemands, DataRateLowerBound, DataRateUpperBound, distribution, ...
+    ndprob, ndmax)
 % create traffic demands for a network
+
+if nargin<7
+    % the lower and upper limits of the number of demands per node pair
+    ndflag = false;
+else
+    ndflag = true;
+end
 
 if nargin<5
     distribution = 'uniform';
@@ -27,7 +35,20 @@ NodePairs = combnk(NodeList, 2);
 NodePairs = [NodePairs; [NodePairs(:, 2), NodePairs(:, 1)]];
 NodePairs = sortrows(NodePairs);
 
-[demandSourceDestinationPairs, ~] = datasample(NodePairs, Ndemands, 1);
+if ~ndflag
+    % generate Ndemands random demands
+    [demandSourceDestinationPairs, ~] = datasample(NodePairs, Ndemands, 1);
+else
+    % generate demands from binomial distribution
+    nDemandsPerPair = binornd(ndmax, ndprob, size(NodePairs, 1), 1);
+    demandSourceDestinationPairs = [];
+    for i=1:size(NodePairs, 1)
+        demandSourceDestinationPairs = [demandSourceDestinationPairs; ...
+            repmat(NodePairs(i, :), nDemandsPerPair(i), 1)];
+    end
+end
+Ndemands = size(demandSourceDestinationPairs, 1);
+
 if strcmp(distribution, 'uniform')
     demandDataRate = randi([DataRateLowerBound, DataRateUpperBound], ...
         [Ndemands, 1]);

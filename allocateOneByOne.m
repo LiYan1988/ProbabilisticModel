@@ -100,6 +100,7 @@ demandsNoisePerLink = struct();
 demandsNoisePerLink.ASE = demandsNoisePerLinkASE;
 demandsNoisePerLink.SCI = demandsNoisePerLinkSCI;
 demandsNoisePerLink.XCI = demandsNoisePerLinkXCI;
+demandsNoisePerLink.NLI = demandsNoisePerLinkSCI+demandsNoisePerLinkXCI;
 demandsNoisePerLink.ALL = demandsNoisePerLinkALL;
 demandsNoisePerLink.XCIUB = demandsNoisePerLinkXCIUB;
 demandsNoisePerLink.ALLUB = demandsNoisePerLinkALLUB;

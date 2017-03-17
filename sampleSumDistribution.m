@@ -9,8 +9,8 @@ function r = sampleSumDistribution(distributionName, p1, p2, M, Nsamples)
 % Nsamples: number of samples
 
 if strcmp(distributionName, 'uniform')
-    r = unifrnd(p1, p2, [Nsamples, M]);
+    r = max(0, unifrnd(p1, p2, [Nsamples, M]));
 elseif strcmp(distributionName, 'normal')
-    r = normrnd(p1, p2, [Nsamples, M]);
+    r = max(0, normrnd(p1, p2, [Nsamples, M]));
 end
 r = sum(r, 2);
