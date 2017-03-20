@@ -79,7 +79,7 @@ p2 = 20;
 ndprob=0.8;
 ndmax=2;
 NMonteCarlo = 1000;
-Repeat = 100;
+Repeat = 1;
 Nsamples = 1e6;
 
 SimulationParameters = struct();
