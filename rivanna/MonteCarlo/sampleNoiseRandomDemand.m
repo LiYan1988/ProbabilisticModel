@@ -48,9 +48,9 @@ mu = mu*1e-30;
 rho = rho*1e18;
 Nase = Nase*1e15;
 
-%%
+%% calculate NumberOfDemandsOnLink with ndmax
 DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
-    p1, p2, distributionName, 1, 1);
+    p1, p2, distributionName, 1, ndmax);
 demandsMatrix = DemandStruct.demandsMatrix;
 demandsTable = DemandStruct.demandsTable;
 SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
@@ -77,9 +77,9 @@ for i=1:NLinks
     % generate a Nsamples x (NumberOfDemandsOnLink(i) matrix storing
     % samples of XCI, each column is a possible number of demands on the
     % link
-    for j=1:NumberOfDemandsOnLink(i)
+    for j=2:NumberOfDemandsOnLink(i)
         Btotal = sampleSumDistribution(distributionName, p1, p2, ...
-            j, size(samplesXCI, 1));
+            j-1, size(samplesXCI, 1));
         samplesXCI(:, j+1) = 2*mu*tmpLength*psd^3*log((Btotal+...
             Bi+2*gb)./(Bi+2*gb));
     end

@@ -1,10 +1,10 @@
 clc;
 clear;
 close all;
-
+rng(321289);
 %% define simulation parameters
-nArray = 40;
-ntotal = 1000;
+nArray = 20;
+ntotal = 400;
 
 % Monte Carlo parameters
 distributionName = 'normal';
@@ -25,7 +25,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc';
+simulationName = 'd2';
 partition = 'economy';
 account = 'maite_group';
 
@@ -34,7 +34,13 @@ if ~exist(simulationName, 'dir')
     mkdir(simulationName)
 end
 oldFolder = cd(simulationName);
-copyfile(fullfile(oldFolder, '*'), '.');
+folderList = dir(oldFolder);
+for f=1:length(folderList)
+    if ~folderList(f).isdir
+        copyfile(fullfile(oldFolder, folderList(f).name), '.');
+    end
+end
+% copyfile(fullfile(oldFolder, '*'), '.');
 
 % copy files for cluster
 id = 1;
@@ -51,6 +57,7 @@ for arrayId = 1:nArray
     end
     fclose(fid);
     % Change cell A
+    A{6} = sprintf('simuID = %d;', arrayId);
     A{7} = sprintf('rng(%d);', randi(1e5));
     A{66} = sprintf('distributionName = ''%s'';', distributionName);
     A{67} = sprintf('p1 = %d;', p1);
@@ -59,7 +66,7 @@ for arrayId = 1:nArray
     A{70} = sprintf('ndmax = %d;', ndmax);
     A{71} = sprintf('NMonteCarlo = %d;', NMonteCarlo);
     A{72} = sprintf('Repeat = %d;', Repeat);
-    A{92} = sprintf('save(''array_workspace_%d.mat'')', id);
+%     A{92} = sprintf('save(''array_workspace_%d.mat'')', id);
     
     % Write cell A into txt
     fid = fopen(fileName, 'w');

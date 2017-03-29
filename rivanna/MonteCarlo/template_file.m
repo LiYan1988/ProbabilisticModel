@@ -3,7 +3,7 @@ warning off;
 
 
 
-
+simuID = 1;
 rng(312);
 
 %% Define fiber parameters
@@ -69,7 +69,7 @@ p2 = 20;
 ndprob=0.8;
 ndmax=2;
 NMonteCarlo = 1;
-Repeat = 1;
+Repeat = 3;
 Nsamples = 1;
 
 SimulationParameters = struct();
@@ -85,8 +85,6 @@ SimulationParameters.Nsamples = Nsamples;
 
 %% Monte Carlo
 tic
-demandsNoise = simulateNoiseRandomDemand(systemParameters, ...
-    TopologyStruct, SimulationParameters);
+simulateNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters, simuID);
 runtimeMonteCarlo = toc;
-
-save('template_workspace.mat')
