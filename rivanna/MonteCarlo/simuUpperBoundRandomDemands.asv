@@ -87,8 +87,7 @@ SimulationParameters.NMonteCarlo = NMonteCarlo;
 SimulationParameters.Repeat = Repeat;
 SimulationParameters.Ndemands = Ndemands;
 SimulationParameters.Nsamples = Nsamples;
-SimulationParameters.CircuitWeight = 0.1;
-SimulationParameters.RegenWeight = 1;
+SimulationParameters.Cir
 
 %% Monte Carlo
 tic

@@ -1,5 +1,5 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
-    Ndemands, DataRateLowerBound, DataRateUpperBound, distribution, ...
+    Ndemands, BandwidthLowerBound, BandwidthUpperBound, distribution, ...
     ndprob, ndmax)
 % create traffic demands for a network
 
@@ -15,8 +15,8 @@ if nargin<5
 end
 
 if nargin<4
-    DataRateLowerBound = 30;
-    DataRateUpperBound = 100;
+    BandwidthLowerBound = 30;
+    BandwidthUpperBound = 100;
 end
 
 
@@ -50,11 +50,11 @@ end
 Ndemands = size(demandSourceDestinationPairs, 1);
 
 if strcmp(distribution, 'uniform')
-    demandDataRate = randi([DataRateLowerBound, DataRateUpperBound], ...
+    demandDataRate = randi([BandwidthLowerBound, BandwidthUpperBound], ...
         [Ndemands, 1]);
 elseif strcmp(distribution, 'normal')
     % DataRateLowerBound is mean, DataRateUpperBound is std
-    demandDataRate = round(normrnd(DataRateLowerBound, DataRateUpperBound, ...
+    demandDataRate = round(normrnd(BandwidthLowerBound, BandwidthUpperBound, ...
         [Ndemands, 1]));
 end
 demands = [demandSourceDestinationPairs, demandDataRate];
@@ -62,6 +62,7 @@ demands = [demandSourceDestinationPairs, demandDataRate];
 demandsMatrix = zeros(Ndemands, NLinks+3);
 demandsMatrix(:, 1:3) = demands;
 demandPaths = cell(Ndemands, 1);
+demandPathLinks = cell(Ndemands, 1);
 demandPathLength = zeros(Ndemands, 1);
 for n=1:Ndemands
     [shortestPath, pathLength] = dijkstra(NetworkCost, demands(n, 1), demands(n, 2));
@@ -73,11 +74,22 @@ for n=1:Ndemands
             demandsMatrix(n, m+3) = 1;
         end
     end
+    demandPathLinks{n} = find(demandsMatrix(n, 3:end));
 end
 
 SetOfDemandsOnLink = cell(NLinks, 1);
 for m=1:NLinks
     SetOfDemandsOnLink{m} = find(demandsMatrix(:, m+3));
+end
+
+SetOfDemandsOnNode = cell(NNodes, 1);
+for m=1:NNodes
+    SetOfDemandsOnNode{m} = [];
+    for i=1:Ndemands
+        if ismember(m, demandPaths{i})
+            SetOfDemandsOnNode{m}(end+1) = i;
+        end
+    end
 end
 
 % finally convert demandsMatrix to a table and give each column meaningful
@@ -99,9 +111,11 @@ DemandStruct.SetOfDemandsOnLink = SetOfDemandsOnLink;
 DemandStruct.demandPathLength = demandPathLength;
 DemandStruct.demandPaths = demandPaths;
 DemandStruct.distribution = distribution;
-DemandStruct.distributionParameter1 = DataRateLowerBound;
-DemandStruct.distributionParameter2 = DataRateUpperBound;
+DemandStruct.distributionParameter1 = BandwidthLowerBound;
+DemandStruct.distributionParameter2 = BandwidthUpperBound;
 DemandStruct.NumberOfDemandsOnLink = zeros(NLinks, 1);
 for i=1:NLinks
     DemandStruct.NumberOfDemandsOnLink(i) = length(SetOfDemandsOnLink{i});
 end
+DemandStruct.demandPathLinks = demandPathLinks;
+DemandStruct.SetOfDemandsOnNode = SetOfDemandsOnNode;
