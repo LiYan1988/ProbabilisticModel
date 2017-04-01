@@ -40,18 +40,13 @@ noisePerLinkDemand = demandsNoise(idMC).ALLPerLinkDemand{1};
 Cmax = systemParameters.Cmax;
 
 %% Create variables
-% the noise at the input of node i along the path of demand d
-Ndi = cell(Ndemands, 1);
+% the noise of demand d at the input of node i
+Ndi = sdpvar(Ndemands, NNodes);
 % whether there is a circuit on node i for demand d
-Cdi = cell(Ndemands, 1);
-for d=1:Ndemands
-    Ndi{d} = sdpvar(length(demandPaths{d}), 1);
-    Ndi{d}(1) = 0; % the source node
-    Cdi{d} = binvar(length(demandPaths{d}), 1);
-end
+Cdi = binvar(Ndemands, NNodes);
 
 % whether node i is a regen site
-Ii = binvar(NNodes, 1);
+Ii = binvar(1, NNodes);
 % total number of regen sites
 Itot = intvar(1);
 % total number of circuits
@@ -60,49 +55,36 @@ Ctot = intvar(1);
 %% Create constraints
 Constraints = [];
 for d=1:Ndemands
-    Constraints = [Constraints; Ndi{d}(1)==0];
+    tmpNodes = demandPaths{d};
     idxLinks = demandPathLinks{d};
-    for i=2:length(demandPaths{d})
+    for i=1:NNodes
+        if ~ismember(i, tmpNodes) || i==tmpNodes(1)
+            Constraints = [Constraints; Ndi(d, i)==0; Cdi(d, i)==0];
+        else
+            Constraints = [Constraints; NoiseMax>=Ndi(d, i)>=0];
+        end
+    end
+    for i=2:length(tmpNodes)
         tmpNoise = noisePerLinkDemand(d, idxLinks(i-1));
-        Constraints = [Constraints; NoiseMax>=Ndi{d}(i)>=0];
-        Constraints = [Constraints; Ndi{d}(i)<=Ndi{d}(i-1)+...
-            tmpNoise];
-        Constraints = [Constraints; Ndi{d}(i)<=bigM*(1-Cdi{d}(i))];
-        Constraints = [Constraints; Ndi{d}(i-1)+tmpNoise-Ndi{d}(i)<=...
-            bigM*Cdi{d}(i)];
+        Constraints = [Constraints; Ndi(d, tmpNodes(i))<=...
+            Ndi(d, tmpNodes(i-1))+tmpNoise];
+        Constraints = [Constraints; Ndi(d, tmpNodes(i))<=...
+            bigM*(1-Cdi(d, tmpNodes(i)))];
+        Constraints = [Constraints; Ndi(d, tmpNodes(i-1))+tmpNoise-...
+            Ndi(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
     end
 end
 
-slackC = cell(NNodes, 1);
-for i=1:NNodes
-    slackC{i} = intvar(length(SetOfDemandsOnNode{i}), 1);
-    for d=1:length(SetOfDemandsOnNode{i})
-        tmpDemand = SetOfDemandsOnNode{i}(d);
-        if d>1
-            fprintf('tmpDemand %d, d %d, i %d\n', tmpDemand, d, i);
-            Constraints = [Constraints; Cdi{tmpDemand}(i)+slackC{i}(d-1)...
-                <=slackC{i}(d)];
-        else
-            Constraints = [Constraints; Cdi{tmpDemand}(d)<=slackC{i}(d)];
-        end
-    end
-    Constraints = [Constraints; slackC{i}(end)<=Cmax*Ii(i)];
-end
+Constraints = [Constraints; sum(Cdi, 1)<=Cmax*Ii];
+
+Constraints = [Constraints; Ctot==sum(sum(Cdi))];
 
 Constraints = [Constraints; Itot==sum(Ii)];
 
-slackCtot = intvar(NNodes, 1);
-for i=1:NNodes
-    if i>1
-        Constraints = [Constraints; slackCtot(i-1)+slackC{i}(end)<=...
-            slackCtot(i)];
-    else
-        Constraints = [Constraints; slackC{i}(end)<=slackCtot(i)];
-    end
-end
-
 %% Create objective
-Objective = CircuitWeight*slackCtot(end)+RegenWeight*Itot;
+Objective = CircuitWeight*Ctot+RegenWeight*Itot;
 
 %% Optimize
-optimize(Constraints,Objective)
+options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
+'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.MIPGapAbs', 1);
+optimize(Constraints,Objective, options)
