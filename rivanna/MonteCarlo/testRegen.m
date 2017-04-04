@@ -76,7 +76,7 @@ p1 = 150;
 p2 = 20;
 ndprob = 0.8;
 ndmax = 3;
-NMonteCarlo = 1;
+NMonteCarlo = 2;
 Repeat = 1;
 Nsamples = 10000;
 Nbins = 65;
@@ -104,38 +104,38 @@ simulateNoiseRandomDemand(systemParameters, ...
 runtimeMonteCarlo = toc;
 
 %% Sample noise
-tic
-SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
-    TopologyStruct, SimulationParameters);
-runtimeSample = toc;
-save('SampleNoise.mat', 'SampleNoise');
+% tic
+% SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
+%     TopologyStruct, SimulationParameters);
+% runtimeSample = toc;
+% save('SampleNoise.mat', 'SampleNoise');
 
 %% Regen for Monte Carlo
-tic
-load('simuResults_1_1.mat')
-regenStructMC = allocateRegenMC(systemParameters, TopologyStruct, ...
-    DemandStruct, demandsNoise, 1);
-runtimeRegenMC = toc;
+% tic
+% load('simuResults_1_1.mat')
+% regenStructMC = allocateRegenMC(systemParameters, TopologyStruct, ...
+%     DemandStruct, demandsNoise, 1);
+% runtimeRegenMC = toc;
 
 %% Regen for Sampling
-fprintf('Regen for sampling\n')
-tic
-% load('SampleNoise.mat')
-% load('simuResults_1_1.mat', 'DemandStruct')
-regenStructSN = allocateRegenSN(systemParameters, TopologyStruct, ...
-    SimulationParameters, SampleNoise);
-runtimeRegenSN = toc;
+% fprintf('Regen for sampling\n')
+% tic
+% % load('SampleNoise.mat')
+% % load('simuResults_1_1.mat', 'DemandStruct')
+% regenStructSN = allocateRegenSN(systemParameters, TopologyStruct, ...
+%     SimulationParameters, SampleNoise);
+% runtimeRegenSN = toc;
 
 %%
-a = zeros(546, 14);
-Ndi = regenStructSN.Ndi;
-figure; hold on;
-for i=1:546
-    for j=1:14
-        a(i, j) = Ndi(1, i, j);
-        plot(Ndi(:, i, j))
-    end
-end
+% a = zeros(546, 14);
+% Ndi = regenStructSN.Ndi;
+% figure; hold on;
+% for i=1:546
+%     for j=1:14
+%         a(i, j) = Ndi(1, i, j);
+%         plot(Ndi(:, i, j))
+%     end
+% end
 
 %%
 % close all;
