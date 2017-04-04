@@ -34,7 +34,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc4';
+simulationName = 'mc4_yx4vf';
 partition = 'economy';
 account = 'maite_group';
 matlabVersion = 'R2015a';
@@ -56,7 +56,7 @@ end
 id = 1;
 for arrayId = 1:nArray
     fileName = sprintf('jobArray%d.m', id);
-    fid = fopen('template_file.m','r');
+    fid = fopen('template_file_yx4vf.m','r');
     i = 1;
     tline = fgetl(fid);
     A{i} = tline;
