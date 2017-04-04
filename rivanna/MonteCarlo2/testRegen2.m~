@@ -33,10 +33,10 @@ systemParameters.gb = 13; % the guardband
 systemParameters.freqMax = 160000; % max frequency in GHz
 systemParameters.psd = 15;
 systemParameters.modulationFormat = 'PM_16QAM';
-systemParameters.Cmax = 1000;
-systemParameters.CircuitWeight = 0.0001;
+systemParameters.Cmax = 100;
+systemParameters.CircuitWeight = 0.1;
 systemParameters.RegenWeight = 1;
-systemParameters.outageProb = 0.1;
+systemParameters.outageProb = 0.01;
 
 %% topology
 % German network
@@ -75,7 +75,7 @@ distributionName = 'normal';
 p1 = 150;
 p2 = 20;
 ndprob = 0.8;
-ndmax = 1;
+ndmax = 3;
 NMonteCarlo = 1;
 Repeat = 1;
 Nsamples = 10000;
@@ -123,7 +123,7 @@ tic
 regenStructSN = allocateRegenSN(systemParameters, TopologyStruct, ...
     SimulationParameters, SampleNoise);
 runtimeRegenSN = toc;
-
+% 
 %%
 % a = zeros(546, 14);
 % Ndi = regenStructSN.Ndi;

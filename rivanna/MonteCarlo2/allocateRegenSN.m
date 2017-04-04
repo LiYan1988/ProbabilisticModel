@@ -57,6 +57,7 @@ Nbins = SampleNoise.Nbins;
 Sbins = SimulationParameters.Sbins;
 histPerLink = SampleNoise.histPerLink;
 outageProb = systemParameters.outageProb;
+sw = norminv(1-outageProb, 0, 1);
 
 Mu = SampleNoise.histPerLinkMu;
 Sigma = SampleNoise.histPerLinkSigma;
@@ -87,7 +88,7 @@ for d=1:Ndemands
                 Cdi(d, i)==0];
         else
             Constraints = [Constraints; Ndis(d, i)>=0; ...
-                Ndis(d, i)+2*Ndim(d, i)<=NoiseMax];
+                Ndis(d, i)+sw*Ndim(d, i)<=NoiseMax];
         end
     end
     for i=2:length(tmpNodes)
@@ -99,11 +100,11 @@ for d=1:Ndemands
             Ndim(d, tmpNodes(i-1))+Mu(tmpNodes(i))-...
             Ndim(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
         Constraints = [Constraints; Ndis(d, tmpNodes(i))<=...
-            Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))];
+            2/3*Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))];
         Constraints = [Constraints; Ndis(d, tmpNodes(i))<=...
             bigM*(1-Cdi(d, tmpNodes(i)))];
         Constraints = [Constraints; ...
-            Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))-...
+            2/3*Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))-...
             Ndis(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
     end
 end
