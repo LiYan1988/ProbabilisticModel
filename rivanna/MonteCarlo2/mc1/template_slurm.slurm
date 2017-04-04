@@ -8,8 +8,8 @@
 #SBATCH --error=mc_%a.stderr
 #SBATCH --partition=economy
 #SBATCH --account=maite_group
-#SBATCH --array=1-5
+#SBATCH --array=1-25
 
 module load matlab/R2016a
 
-matlab -nodesktop -r "jobArray${SLURM_ARRAY_TASK_ID};" -logfile mc${SLURM_ARRAY_TASK_ID}
+matlab -nodesktop -r "jobArray${SLURM_ARRAY_TASK_ID}.m;" -logfile mc${SLURM_ARRAY_TASK_ID}

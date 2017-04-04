@@ -1,5 +1,5 @@
-function  [regenStruct] = allocateRegenMC(systemParameters, TopologyStruct, ...
-    DemandStruct, demandsNoise, idMC)
+function  [regenStruct] = allocateRegenSN(systemParameters, TopologyStruct, ...
+    SimulationParameters, SampleNoise)
 % solve the regenerater allocation problem with ILP for Monte Carlo
 % simulations
 
@@ -17,6 +17,19 @@ LinkListIDs = TopologyStruct.LinkListIDs;
 LinkLengths = TopologyStruct.LinkLengths;
 LinksTable = TopologyStruct.LinksTable;
 
+p1 = SimulationParameters.p1;
+p2 = SimulationParameters.p2;
+ndprob = SimulationParameters.ndprob;
+ndmax = SimulationParameters.ndmax;
+distributionName = SimulationParameters.distributionName;
+NMonteCarlo = SimulationParameters.NMonteCarlo;
+Repeat = SimulationParameters.Repeat;
+Ndemands = SimulationParameters.Ndemands;
+Nsamples = SimulationParameters.Nsamples;
+Nbins = SimulationParameters.Nbins;
+
+DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
+    p1, p2, distributionName, 1, ndmax);
 demandsMatrix = DemandStruct.demandsMatrix;
 demandsTable = DemandStruct.demandsTable;
 SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
@@ -34,14 +47,20 @@ CircuitWeight = systemParameters.CircuitWeight;
 RegenWeight = systemParameters.RegenWeight;
 
 NoiseMax = systemParameters.psd/...
-    getfield(systemParameters.snrThresholds, systemParameters.modulationFormat);
-bigM = 2*NoiseMax;
-noisePerLinkDemand = demandsNoise.ALLPerLinkDemand{idMC};
+    getfield(systemParameters.snrThresholds, ...
+    systemParameters.modulationFormat);
+bigM = 2;
 Cmax = systemParameters.Cmax;
+
+Mbins = SampleNoise.Mbins;
+Nbins = SampleNoise.Nbins;
+Sbins = SimulationParameters.Sbins;
+histPerLink = SampleNoise.histPerLink;
+outageProb = systemParameters.outageProb;
 
 %% Create variables
 % the noise of demand d at the input of node i
-Ndi = sdpvar(Ndemands, NNodes);
+Ndi = sdpvar(Nbins, Ndemands, NNodes);
 % whether there is a circuit on node i for demand d
 Cdi = binvar(Ndemands, NNodes);
 
@@ -59,21 +78,27 @@ for d=1:Ndemands
     idxLinks = demandPathLinks{d};
     for i=1:NNodes
         if ~ismember(i, tmpNodes) || i==tmpNodes(1)
-            Constraints = [Constraints; Ndi(d, i)==0; Cdi(d, i)==0];
+            Constraints = [Constraints; Ndi(2:Nbins, d, i)==0; ...
+                Cdi(d, i)==0];
         else
-            Constraints = [Constraints; Ndi(d, i)>=0];
+            Constraints = [Constraints; Ndi(:, d, i)>=0; ...
+                sum(Ndi(:, d, i))==1];
         end
     end
     for i=2:length(tmpNodes)
-        tmpNoise = noisePerLinkDemand(d, idxLinks(i-1));
-        Constraints = [Constraints; Ndi(d, tmpNodes(i))<=...
-            Ndi(d, tmpNodes(i-1))+tmpNoise];
-        Constraints = [Constraints; Ndi(d, tmpNodes(i))<=...
+        tmpNoise = histPerLink(:, idxLinks(i-1));
+        tmpNoiseA = convmtx(tmpNoise, Nbins);
+        tmpNoiseA(Nbins, :) = sum(tmpNoiseA(Nbins:end, :), 1);
+        tmpNoiseA(Nbins+1:end, :) = [];
+        Constraints = [Constraints; Ndi(2:Nbins, d, tmpNodes(i))<=...
+            tmpNoiseA(2:Nbins, :)*Ndi(:, d, tmpNodes(i-1))];
+        Constraints = [Constraints; Ndi(2:Nbins, d, tmpNodes(i))<=...
             bigM*(1-Cdi(d, tmpNodes(i)))];
-        Constraints = [Constraints; Ndi(d, tmpNodes(i-1))+tmpNoise-...
-            Ndi(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
-        Constraints = [Constraints; Ndi(d, tmpNodes(i-1))+tmpNoise...
-            <=NoiseMax];
+        Constraints = [Constraints; ...
+            tmpNoiseA(2:Nbins, :)*Ndi(:, d, tmpNodes(i-1))-...
+            Ndi(2:Nbins, d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
+        Constraints = [Constraints; ...
+            sum(tmpNoiseA(Mbins-Sbins:Nbins,:)*Ndi(:, d, tmpNodes(i-1)))<=outageProb];
     end
 end
 
@@ -87,14 +112,12 @@ Constraints = [Constraints; Itot==sum(Ii)];
 Objective = CircuitWeight*Ctot+RegenWeight*Itot;
 
 %% Optimize
-% options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
-% 'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.mipgap', 0.001, ...
-% 'debug', 1);
-options = sdpsettings('solver', 'intlinprog');
+options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
+'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.mipgap', 0.001);
 optimize(Constraints,Objective, options)
 
 Cdi = sparse(value(Cdi));
-Ndi = sparse(value(Ndi));
+Ndi = value(Ndi);
 Ii = value(Ii);
 Ctot = value(Ctot);
 Itot = value(Itot);
@@ -106,3 +129,5 @@ regenStruct.Ii = Ii;
 regenStruct.Ctot = Ctot;
 regenStruct.Itot = Itot;
 regenStruct.Ci = full(sum(Cdi, 1));
+regenStruct.Constraints = Constraints;
+regenStruct.Objective = Objective;
