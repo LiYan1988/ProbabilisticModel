@@ -21,6 +21,8 @@ NMonteCarlo = SimulationParameters.NMonteCarlo;
 Repeat = SimulationParameters.Repeat;
 Ndemands = SimulationParameters.Ndemands;
 Nsamples = SimulationParameters.Nsamples;
+Nbins = SimulationParameters.Nbins;
+Mbins = SimulationParameters.Mbins;
 
 %% extract parameters
 alpha = systemParameters.alpha;
@@ -101,3 +103,23 @@ SampleNoise.linkALL = sampleNoiseALLLink;
 SampleNoise.linkSCI = sampleNoiseSCILink;
 SampleNoise.linkXCI = sampleNoiseXCILink;
 SampleNoise.linkNLI = sampleNoiseNLILink;
+
+
+NoiseMax = systemParameters.psd/...
+    getfield(systemParameters.snrThresholds, ...
+    systemParameters.modulationFormat);
+edgeMin = 0; % it must be 0
+% Mbins bins for 0 to NoiseMax noise, and Nbins-Mbins bins for bigger noise
+edgeMax = NoiseMax/Mbins*Nbins; 
+
+edges = linspace(edgeMin, edgeMax, Nbins+1);
+edges(end) = inf;
+SampleNoise.histEdges = edges;
+histPerLink = zeros(Nbins, NLinks);
+for i=1:NLinks
+    histPerLink(:, i) = histcounts(sampleNoiseALLLink(:, i), edges, ...
+        'normalization', 'probability');
+end
+SampleNoise.histPerLink = histPerLink;
+SampleNoise.Nbins = Nbins;
+SampleNoise.Mbins = Mbins;

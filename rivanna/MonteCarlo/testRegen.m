@@ -32,8 +32,11 @@ systemParameters.snrThresholds = struct('PM_BSPK', 3.52, ...
 systemParameters.gb = 13; % the guardband
 systemParameters.freqMax = 160000; % max frequency in GHz
 systemParameters.psd = 15;
-systemParameters.modulationFormat = 'PM_64QAM';
+systemParameters.modulationFormat = 'PM_16QAM';
 systemParameters.Cmax = 100;
+systemParameters.CircuitWeight = 0.1;
+systemParameters.RegenWeight = 1;
+systemParameters.outageProb = 0.01;
 
 %% topology
 % German network
@@ -75,7 +78,10 @@ ndprob = 0.8;
 ndmax = 3;
 NMonteCarlo = 1;
 Repeat = 1;
-Nsamples = 1000;
+Nsamples = 10000;
+Nbins = 65;
+Mbins = 50;
+Sbins = 15;
 
 SimulationParameters = struct();
 SimulationParameters.p1 = p1;
@@ -87,8 +93,9 @@ SimulationParameters.NMonteCarlo = NMonteCarlo;
 SimulationParameters.Repeat = Repeat;
 SimulationParameters.Ndemands = Ndemands;
 SimulationParameters.Nsamples = Nsamples;
-SimulationParameters.CircuitWeight = 0.1;
-SimulationParameters.RegenWeight = 1;
+SimulationParameters.Nbins = Nbins;
+SimulationParameters.Mbins = Mbins;
+SimulationParameters.Sbins = Sbins;
 
 %% Monte Carlo
 tic
@@ -97,12 +104,45 @@ simulateNoiseRandomDemand(systemParameters, ...
 runtimeMonteCarlo = toc;
 
 %% Sample noise
-% tic
-% SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
-%     TopologyStruct, SimulationParameters);
-% runtimeSample = toc;
+tic
+SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters);
+runtimeSample = toc;
+save('SampleNoise.mat', 'SampleNoise');
+
+%% Regen for Monte Carlo
+tic
+load('simuResults_1_1.mat')
+regenStructMC = allocateRegenMC(systemParameters, TopologyStruct, ...
+    DemandStruct, demandsNoise, 1);
+runtimeRegenMC = toc;
+
+%% Regen for Sampling
+fprintf('Regen for sampling\n')
+tic
+% load('SampleNoise.mat')
+% load('simuResults_1_1.mat', 'DemandStruct')
+regenStructSN = allocateRegenSN(systemParameters, TopologyStruct, ...
+    SimulationParameters, SampleNoise);
+runtimeRegenSN = toc;
 
 %%
-load('simuResults_1_1.mat')
-allocateRegenMC(systemParameters, TopologyStruct, ...
-    DemandStruct, SimulationParameters, demandsNoise, 1)
+a = zeros(546, 14);
+Ndi = regenStructSN.Ndi;
+figure; hold on;
+for i=1:546
+    for j=1:14
+        a(i, j) = Ndi(1, i, j);
+        plot(Ndi(:, i, j))
+    end
+end
+
+%%
+% close all;
+% MCmax = zeros(46, 1);
+% for j=1:46
+%     figure; hold on;
+%     MCmax(j) = max(demandsNoise.ALLPerLinkDemand{1}(:, j));
+%     plot([MCmax(j), MCmax(j)], [0, 1]);
+%     histogram('BinEdges', SampleNoise.histEdges, 'BinCounts', SampleNoise.histPerLink(:, j))
+% end

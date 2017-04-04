@@ -74,7 +74,7 @@ for n=1:Ndemands
             demandsMatrix(n, m+3) = 1;
         end
     end
-    demandPathLinks{n} = find(demandsMatrix(n, 3:end));
+    demandPathLinks{n} = find(demandsMatrix(n, 4:end));
 end
 
 SetOfDemandsOnLink = cell(NLinks, 1);

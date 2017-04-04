@@ -1,5 +1,5 @@
-function  allocateRegenMC(systemParameters, TopologyStruct, ...
-    DemandStruct, SimulationParameters, demandsNoise, idMC)
+function  [regenStruct] = allocateRegenMC(systemParameters, TopologyStruct, ...
+    DemandStruct, demandsNoise, idMC)
 % solve the regenerater allocation problem with ILP for Monte Carlo
 % simulations
 
@@ -30,8 +30,8 @@ Ndemands = size(demandsMatrix, 1);
 demandPathLinks = DemandStruct.demandPathLinks;
 SetOfDemandsOnNode = DemandStruct.SetOfDemandsOnNode;
 
-CircuitWeight = SimulationParameters.CircuitWeight;
-RegenWeight = SimulationParameters.RegenWeight;
+CircuitWeight = systemParameters.CircuitWeight;
+RegenWeight = systemParameters.RegenWeight;
 
 NoiseMax = systemParameters.psd/...
     getfield(systemParameters.snrThresholds, systemParameters.modulationFormat);
@@ -61,7 +61,7 @@ for d=1:Ndemands
         if ~ismember(i, tmpNodes) || i==tmpNodes(1)
             Constraints = [Constraints; Ndi(d, i)==0; Cdi(d, i)==0];
         else
-            Constraints = [Constraints; NoiseMax>=Ndi(d, i)>=0];
+            Constraints = [Constraints; Ndi(d, i)>=0];
         end
     end
     for i=2:length(tmpNodes)
@@ -72,6 +72,8 @@ for d=1:Ndemands
             bigM*(1-Cdi(d, tmpNodes(i)))];
         Constraints = [Constraints; Ndi(d, tmpNodes(i-1))+tmpNoise-...
             Ndi(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
+        Constraints = [Constraints; Ndi(d, tmpNodes(i-1))+tmpNoise...
+            <=NoiseMax];
     end
 end
 
@@ -86,5 +88,19 @@ Objective = CircuitWeight*Ctot+RegenWeight*Itot;
 
 %% Optimize
 options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
-'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.MIPGapAbs', 1);
+'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.mipgap', 0.001);
 optimize(Constraints,Objective, options)
+
+Cdi = sparse(value(Cdi));
+Ndi = sparse(value(Ndi));
+Ii = value(Ii);
+Ctot = value(Ctot);
+Itot = value(Itot);
+
+regenStruct = struct();
+regenStruct.Cdi = Cdi;
+regenStruct.Ndi = Ndi;
+regenStruct.Ii = Ii;
+regenStruct.Ctot = Ctot;
+regenStruct.Itot = Itot;
+regenStruct.Ci = full(sum(Cdi, 1));

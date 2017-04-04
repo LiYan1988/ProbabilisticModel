@@ -19,7 +19,7 @@ for i=1:Repeat
         DemandStruct, NMonteCarlo);
     runtimeRepeat = toc;
     save(sprintf('simuResults_%d_%d.mat', simuID, i));
-    if mod(i, 2)
+    if ~mod(i, 1)
         fprintf('Simulation %d is finished\n', i)
     end
 end

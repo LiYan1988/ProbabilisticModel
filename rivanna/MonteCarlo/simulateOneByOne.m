@@ -48,7 +48,7 @@ XCIPerLinkDemand = cell(NMonteCarlo, 1);
 SCIPerLinkDemand = cell(NMonteCarlo, 1);
 NLIPerLinkDemand = cell(NMonteCarlo, 1);
 ALLPerLinkDemand = cell(NMonteCarlo, 1);
-parfor i=1:NMonteCarlo
+for i=1:NMonteCarlo
     demandsOrder = randperm(Ndemands);
     [demandsFrequency(:, :, i), noiseTemp] = ...
         allocateOneByOne(systemParameters, TopologyStruct, ...
