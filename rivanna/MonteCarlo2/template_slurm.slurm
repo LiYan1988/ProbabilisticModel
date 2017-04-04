@@ -10,6 +10,6 @@
 #SBATCH --account=maite_group
 #SBATCH --array=1-25
 
-module load matlab/R2016a
+module load matlab/R2016a gurobi/6.5.1
 
-matlab -nodesktop -r "jobArray${SLURM_ARRAY_TASK_ID}.m;" -logfile mc${SLURM_ARRAY_TASK_ID}
+matlab -nodesktop -nojvm -noFigureWindows -nosplash -nodisplay -r "jobArray${SLURM_ARRAY_TASK_ID}.m;" -logfile mc${SLURM_ARRAY_TASK_ID}

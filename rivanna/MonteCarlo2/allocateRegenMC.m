@@ -87,10 +87,10 @@ Constraints = [Constraints; Itot==sum(Ii)];
 Objective = CircuitWeight*Ctot+RegenWeight*Itot;
 
 %% Optimize
-% options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
-% 'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.mipgap', 0.001, ...
-% 'debug', 1);
-options = sdpsettings('solver', 'intlinprog');
+options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
+'gurobi.mipfocus', 1, 'gurobi.timelimit', 300, 'gurobi.mipgap', 0.001, ...
+'debug', 0);
+% options = sdpsettings('solver', 'intlinprog');
 optimize(Constraints,Objective, options)
 
 Cdi = sparse(value(Cdi));

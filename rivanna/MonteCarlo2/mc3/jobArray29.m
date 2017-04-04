@@ -3,8 +3,8 @@ warning off;
 addpath(genpath('/scratch/ly6j/YALMIP'));
 addpath(genpath('/share/apps/gurobi/6.5.1/matlab'));
 
-simuID = 1;
-rng(312);
+simuID = 29;
+rng(68482);
 
 %% Define fiber parameters
 alpha = 0.22; % dB/km, attenuation of fiber, NOTE: alpha is positive!
@@ -35,9 +35,9 @@ systemParameters.gb = 13; % the guardband
 systemParameters.freqMax = 160000; % max frequency in GHz
 systemParameters.psd = 15;
 systemParameters.modulationFormat = 'PM_16QAM';
-systemParameters.Cmax = 100;
-systemParameters.CircuitWeight = 0.1;
-systemParameters.RegenWeight = 1;
+systemParameters.Cmax = 10;
+systemParameters.CircuitWeight = 0.05;
+systemParameters.RegenWeight = 1.00;
 systemParameters.outageProb = 0.01;
 %####################################################################
 
@@ -79,10 +79,10 @@ Nsamples = 1; % don't need to change
 distributionName = 'normal';
 p1 = 150;
 p2 = 20;
-ndprob=0.8;
-ndmax=3;
-NMonteCarlo = 1;
-Repeat = 3;
+ndprob = 0.80;
+ndmax = 2;
+NMonteCarlo = 1000;
+Repeat = 1;
 Nbins = 65;
 Mbins = 50;
 Sbins = 15;
@@ -113,10 +113,10 @@ tic
 for j=1:Repeat
     load(sprintf('simuResults_%d_%d.mat', simuID, j))
     for k=1:NMonteCarlo
+        yalmip('clear')
         regenStructMC = allocateRegenMC(systemParameters, TopologyStruct, ...
             DemandStruct, demandsNoise, k);
         save(sprintf('regenStructMC_%d_%d_%d.mat', simuID, j, k), 'regenStructMC')
     end
 end
 runtimeRegenMC = toc;
-

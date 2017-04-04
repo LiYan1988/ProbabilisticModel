@@ -11,14 +11,14 @@ RegenWeight = 1;
 outageProb = 0.01;
 
 % simulation parameters
-nArray = 1; % how many array jobs
-ntotal = 1; % #of different demands
+nArray = 50; % how many array jobs
+ntotal = 50; % #of different demands
 distributionName = 'normal';
 p1 = 150; % mean of normal distribution
 p2 = 20; % std of normal distribution
 ndprob=0.8; % probability of having a demand
 ndmax=2; % maximum number of demands a node pair can have
-NMonteCarlo = 10; % number of simulations in one Monte Carlo simulation
+NMonteCarlo = 1000; % number of simulations in one Monte Carlo simulation
 Repeat = round(ntotal/nArray); % number of different total demands per job
 Nbins = 65;
 Mbins = 50;
@@ -34,7 +34,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc1';
+simulationName = 'mc3';
 partition = 'economy';
 account = 'maite_group';
 
