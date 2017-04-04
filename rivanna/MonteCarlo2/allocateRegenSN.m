@@ -49,7 +49,7 @@ RegenWeight = systemParameters.RegenWeight;
 NoiseMax = systemParameters.psd/...
     getfield(systemParameters.snrThresholds, ...
     systemParameters.modulationFormat);
-bigM = 2;
+bigM = 4*NoiseMax;
 Cmax = systemParameters.Cmax;
 
 Mbins = SampleNoise.Mbins;
@@ -58,9 +58,13 @@ Sbins = SimulationParameters.Sbins;
 histPerLink = SampleNoise.histPerLink;
 outageProb = systemParameters.outageProb;
 
+Mu = SampleNoise.histPerLinkMu;
+Sigma = SampleNoise.histPerLinkSigma;
+
 %% Create variables
 % the noise of demand d at the input of node i
-Ndi = sdpvar(Nbins, Ndemands, NNodes);
+Ndim = sdpvar(Ndemands, NNodes);
+Ndis = sdpvar(Ndemands, NNodes);
 % whether there is a circuit on node i for demand d
 Cdi = binvar(Ndemands, NNodes);
 
@@ -74,31 +78,33 @@ Ctot = intvar(1);
 %% Create constraints
 Constraints = [];
 for d=1:Ndemands
+    fprintf('demand %d\n', d);
     tmpNodes = demandPaths{d};
     idxLinks = demandPathLinks{d};
     for i=1:NNodes
         if ~ismember(i, tmpNodes) || i==tmpNodes(1)
-            Constraints = [Constraints; Ndi(2:Nbins, d, i)==0; ...
+            Constraints = [Constraints; Ndim(d, i)==0; Ndis(d, i)==0; ...
                 Cdi(d, i)==0];
         else
-            Constraints = [Constraints; Ndi(:, d, i)>=0; ...
-                sum(Ndi(:, d, i))==1];
+            Constraints = [Constraints; Ndis(d, i)>=0; ...
+                Ndis(d, i)+2*Ndim(d, i)<=NoiseMax];
         end
     end
     for i=2:length(tmpNodes)
-        tmpNoise = histPerLink(:, idxLinks(i-1));
-        tmpNoiseA = convmtx(tmpNoise, Nbins);
-        tmpNoiseA(Nbins, :) = sum(tmpNoiseA(Nbins:end, :), 1);
-        tmpNoiseA(Nbins+1:end, :) = [];
-        Constraints = [Constraints; Ndi(2:Nbins, d, tmpNodes(i))<=...
-            tmpNoiseA(2:Nbins, :)*Ndi(:, d, tmpNodes(i-1))];
-        Constraints = [Constraints; Ndi(2:Nbins, d, tmpNodes(i))<=...
+        Constraints = [Constraints; Ndim(d, tmpNodes(i))<=...
+            Ndim(d, tmpNodes(i-1))+Mu(tmpNodes(i))];
+        Constraints = [Constraints; Ndim(d, tmpNodes(i))<=...
             bigM*(1-Cdi(d, tmpNodes(i)))];
         Constraints = [Constraints; ...
-            tmpNoiseA(2:Nbins, :)*Ndi(:, d, tmpNodes(i-1))-...
-            Ndi(2:Nbins, d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
+            Ndim(d, tmpNodes(i-1))+Mu(tmpNodes(i))-...
+            Ndim(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
+        Constraints = [Constraints; Ndis(d, tmpNodes(i))<=...
+            Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))];
+        Constraints = [Constraints; Ndis(d, tmpNodes(i))<=...
+            bigM*(1-Cdi(d, tmpNodes(i)))];
         Constraints = [Constraints; ...
-            sum(tmpNoiseA(Mbins-Sbins:Nbins,:)*Ndi(:, d, tmpNodes(i-1)))<=outageProb];
+            Ndis(d, tmpNodes(i-1))+Sigma(tmpNodes(i))-...
+            Ndis(d, tmpNodes(i))<=bigM*Cdi(d, tmpNodes(i))];
     end
 end
 
@@ -117,14 +123,16 @@ options = sdpsettings('solver', 'gurobi', 'gurobi.symmetry', 1, ...
 optimize(Constraints,Objective, options)
 
 Cdi = sparse(value(Cdi));
-Ndi = value(Ndi);
+Ndis = value(Ndis);
+Ndim = value(Ndim);
 Ii = value(Ii);
 Ctot = value(Ctot);
 Itot = value(Itot);
 
 regenStruct = struct();
 regenStruct.Cdi = Cdi;
-regenStruct.Ndi = Ndi;
+regenStruct.Ndis = Ndis;
+regenStruct.Ndim = Ndim;
 regenStruct.Ii = Ii;
 regenStruct.Ctot = Ctot;
 regenStruct.Itot = Itot;

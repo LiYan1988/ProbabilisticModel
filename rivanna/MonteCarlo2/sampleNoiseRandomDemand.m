@@ -123,3 +123,13 @@ end
 SampleNoise.histPerLink = histPerLink;
 SampleNoise.Nbins = Nbins;
 SampleNoise.Mbins = Mbins;
+
+histPerLinkMu = zeros(NLinks, 1);
+histPerLinkSigma = zeros(NLinks, 1);
+for i=1:NLinks
+    pd = fitdist(sampleNoiseALLLink(:, i), 'normal');
+    histPerLinkMu(i) = pd.mu;
+    histPerLinkSigma(i) = pd.sigma;
+end
+SampleNoise.histPerLinkMu = histPerLinkMu;
+SampleNoise.histPerLinkSigma = histPerLinkSigma;
