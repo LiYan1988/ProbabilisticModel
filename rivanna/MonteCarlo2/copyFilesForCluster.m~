@@ -37,7 +37,7 @@ nsec = 0;
 simulationName = 'mc4';
 partition = 'economy';
 account = 'maite_group';
-matlabVersion = 'R2015a';
+matlabVersion = 'R2016a';
 
 %% write array jobs
 if ~exist(simulationName, 'dir')
@@ -128,7 +128,7 @@ A{8} = sprintf('#SBATCH --error=%s_%%a.stderr', simulationName);
 A{9} = sprintf('#SBATCH --partition=%s', partition);
 A{10} = sprintf('#SBATCH --account=%s', account);
 A{11} = sprintf('#SBATCH --array=1-%d', nArray);
-A{13} = sprintf('module load matlab/%s gurobi/6.5.1', matlabVersion);
+A{13} = sprintf('module load matlab/%s gurobi/6.5.1', )
 A{15} = sprintf('matlab -nodesktop -nojvm -noFigureWindows -nosplash -nodisplay -r "jobArray${SLURM_ARRAY_TASK_ID};" -logfile %s${SLURM_ARRAY_TASK_ID}', ...
     simulationName);
 
