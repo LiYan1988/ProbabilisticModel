@@ -36,7 +36,7 @@ systemParameters.modulationFormat = 'PM_16QAM';
 systemParameters.Cmax = 1000;
 systemParameters.CircuitWeight = 0.0001;
 systemParameters.RegenWeight = 1;
-systemParameters.outageProb = 0.1;
+systemParameters.outageProb = 0.15;
 
 %% topology
 % German network
