@@ -34,17 +34,17 @@ systemParameters.snrThresholds = struct('PM_BSPK', 3.52, ...
 systemParameters.gb = 13; % the guardband
 systemParameters.freqMax = 160000; % max frequency in GHz
 systemParameters.psd = 15;
-systemParameters.modulationFormat = 'PM_16QAM';
+systemParameters.modulationFormat = 'PM_QPSK';
 systemParameters.Cmax = 100;
 systemParameters.CircuitWeight = 0.1;
 systemParameters.RegenWeight = 1;
-systemParameters.outageProb = 0.01;
+systemParameters.outageProb = 0.0001;
 %####################################################################
 
 %% topology
 % German network
-german = load('GermenNetworkTopology.mat');
-NetworkCost = german.networkCostMatrix/100;
+coronet = load('CoronetTopology.mat');
+NetworkCost = coronet.networkCostMatrix;
 
 NNodes = size(NetworkCost, 1);
 NodeList = 1:NNodes;
@@ -103,21 +103,10 @@ SimulationParameters.Mbins = Mbins;
 SimulationParameters.Sbins = Sbins;
 
 %% Monte Carlo
-tic
+x = load('templateDemandStruct.mat');
+DemandStructTemplate = x.DemandStruct;
+clear x;
 simulateNoiseRandomDemand(systemParameters, ...
-    TopologyStruct, SimulationParameters, simuID);
-runtimeMonteCarlo = toc;
+    TopologyStruct, SimulationParameters, DemandStructTemplate, simuID);
 
-%% Regen for Monte Carlo
-tic
-for j=1:Repeat
-    load(sprintf('simuResults_%d_%d.mat', simuID, j))
-    for k=1:NMonteCarlo
-        yalmip('clear')
-        regenStructMC = allocateRegenMC(systemParameters, TopologyStruct, ...
-            DemandStruct, demandsNoise, k);
-        save(sprintf('regenStructMC_%d_%d_%d.mat', simuID, j, k), 'regenStructMC')
-    end
-end
-runtimeRegenMC = toc;
 

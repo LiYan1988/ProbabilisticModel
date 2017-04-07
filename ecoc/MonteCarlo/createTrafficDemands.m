@@ -1,7 +1,12 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
     Ndemands, BandwidthLowerBound, BandwidthUpperBound, distribution, ...
-    ndprob, ndmax)
+    ndprob, ndmax, a2aFlag)
 % create traffic demands for a network
+
+if nargin<8
+    % by default generate all-to-all traffic
+    a2aFlag = true;
+end
 
 if nargin<7
     % the lower and upper limits of the number of demands per node pair
@@ -30,9 +35,10 @@ LinkListIDs = TopologyStruct.LinkListIDs;
 LinkLengths = TopologyStruct.LinkLengths;
 LinksTable = TopologyStruct.LinksTable;
 
-
 NodePairs = combnk(NodeList, 2);
-NodePairs = [NodePairs; [NodePairs(:, 2), NodePairs(:, 1)]];
+if a2aFlag
+    NodePairs = [NodePairs; [NodePairs(:, 2), NodePairs(:, 1)]];
+end
 NodePairs = sortrows(NodePairs);
 
 if ~ndflag
@@ -119,3 +125,8 @@ for i=1:NLinks
 end
 DemandStruct.demandPathLinks = demandPathLinks;
 DemandStruct.SetOfDemandsOnNode = SetOfDemandsOnNode;
+
+DemandStruct.a2aFlag = a2aFlag;
+DemandStruct.ndflag = ndflag;
+DemandStruct.ndprob = ndprob;
+DemandStruct.ndmax = ndmax;

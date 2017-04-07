@@ -5,20 +5,20 @@ rng(321289);
 %% define simulation parameters
 % system parameters
 modulationFormat = 'PM_16QAM';
-Cmax = 10;
-CircuitWeight = 0.05;
+Cmax = 2000;
+CircuitWeight = 0.0001;
 RegenWeight = 1;
 outageProb = 0.01;
 
 % simulation parameters
-nArray = 200; % how many array jobs
-ntotal = 800; % #of different demands
+nArray = 4; % how many array jobs
+ntotal = 4; % #of different demands
 distributionName = 'normal';
-p1 = 150; % mean of normal distribution
+p1 = 200; % mean of normal distribution
 p2 = 20; % std of normal distribution
-ndprob=0.8; % probability of having a demand
-ndmax=2; % maximum number of demands a node pair can have
-NMonteCarlo = 1000; % number of simulations in one Monte Carlo simulation
+ndprob=1; % probability of having a demand
+ndmax=1; % maximum number of demands a node pair can have
+NMonteCarlo = 10; % number of simulations in one Monte Carlo simulation
 Repeat = round(ntotal/nArray); % number of different total demands per job
 Nbins = 65;
 Mbins = 50;
@@ -34,10 +34,10 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc4';
+simulationName = 'mc1';
 partition = 'economy';
 account = 'maite_group';
-matlabVersion = 'R2015a';
+matlabVersion = 'R2016a';
 
 %% write array jobs
 if ~exist(simulationName, 'dir')

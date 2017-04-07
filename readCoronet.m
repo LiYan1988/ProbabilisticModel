@@ -73,18 +73,38 @@ for i=1:75
     NodeNames{i} = nodes.City{i};
 end
 networkCostMatrix = inf(75);
-networkTopology = zeros(size(links));
+
 for i=1:size(links, 1)
     src = find(contains(NodeNames, links{i, 1}));
     dst = find(contains(NodeNames, links{i, 2}));
     distance = ceil(links{i, 3}/100);
     networkCostMatrix(src, dst) = distance;
-    networkTopology(i, 1) = src;
-    networkTopology(i, 2) = dst;
-    networkTopology(i, 3) = distance;
+end
+
+for i=1:75
+    for j=i+1:75
+        if ~isinf(networkCostMatrix(i, j))
+            networkCostMatrix(j, i) = networkCostMatrix(i, j);
+        end
+    end
 end
 
 networkAdjacentMatrix = double(~(isinf(networkCostMatrix)));
 
+networkTopology = zeros(sum(networkAdjacentMatrix(:)), 1);
+n=1;
+for i=1:75
+    for j=1:75
+        if ~isinf(networkCostMatrix(i, j))
+            networkTopology(n, 1) = i;
+            networkTopology(n, 2) = j;
+            networkTopology(n, 3) = networkCostMatrix(i, j);
+            n = n+1;
+        end
+    end
+end
+
+locations = [nodes.Latitude, nodes.Longitude];
+
 save('CoronetTopology.mat', 'networkCostMatrix', ...
-    'networkAdjacentMatrix', 'networkTopology')
+    'networkAdjacentMatrix', 'networkTopology', 'locations')
