@@ -8,7 +8,7 @@
 #SBATCH --error=mc1_%a.stderr
 #SBATCH --partition=economy
 #SBATCH --account=maite_group
-#SBATCH --array=1-4
+#SBATCH --array=1-25
 
 module load matlab/R2016a gurobi/6.5.1
 
