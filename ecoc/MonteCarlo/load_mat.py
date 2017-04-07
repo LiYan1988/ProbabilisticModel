@@ -21,8 +21,7 @@ print(list(m.keys()))
 
 Ndemands = m['Ndemands'][0][0]
 Cmax = m['Cmax'][0][0]
-Cmax = 2000
-CircuitWeight = m['CircuitWeight'][0][0]
+CircuitWeight = 0.5/Cmax
 bigM = m['bigM'][0][0]
 NoiseMax = m['NoiseMax'][0][0]
 RegenWeight = m['RegenWeight'][0][0]
@@ -91,39 +90,34 @@ for n in range(NNodes):
     
 model_time = time.clock()-tic
 #%%
-#tic = time.clock()
-#model.Params.timelimit = 100
-#model.Params.presolve = 2
-#model.Params.mipfocus = 1
-#model.Params.symmetry = 1
-#model.Params.heuristics = 0.6
-##model.Params.cuts = 2
-#model.optimize()
-#solve_time = time.clock()-tic
+tic = time.clock()
+model.Params.timelimit = 300
+model.Params.presolve = 2
+model.Params.mipfocus = 1
+model.Params.symmetry = 1
+model.Params.heuristics = 0.4
+#model.Params.cuts = 2
+model.optimize()
+solve_time = time.clock()-tic
 
 #%%
-#Ndnx = {}
-#for d in range(Ndemands):
-#    for n in range(NNodes):
-#        Ndnx[d, n] = Ndn[d, n].x
-#    
-#Cdnx = {}
-#for d in range(Ndemands):
-#    for n in range(NNodes):
-#        Cdnx[d, n] = Cdn[d, n].x
-#        
-#Iix = {}
-#for n in range(NNodes):
-#    Iix[n] = Ii[n].x
-#    
-#Itotx = sum(Iix.values())
-#Ctot_per_node = [sum(Cdnx[d, n] for d in range(Ndemands)) 
-#                 for n in range(NNodes)]
-#Ctot_per_demand = [sum(Cdnx[d, n] for n in range(NNodes)) 
-#                for d in range(Ndemands)]
-#Ctot = sum(Ctot_per_node[n] for n in range(NNodes))
-
-#%%
-model.Params.timelimit = 60
-model.Params.tunetimelimit = 600
-model.tune()
+Ndnx = {}
+for d in range(Ndemands):
+    for n in range(NNodes):
+        Ndnx[d, n] = Ndn[d, n].x
+    
+Cdnx = {}
+for d in range(Ndemands):
+    for n in range(NNodes):
+        Cdnx[d, n] = Cdn[d, n].x
+        
+Iix = {}
+for n in range(NNodes):
+    Iix[n] = Ii[n].x
+    
+Itotx = sum(Iix.values())
+Ctot_per_node = [sum(Cdnx[d, n] for d in range(Ndemands)) 
+                 for n in range(NNodes)]
+Ctot_per_demand = [sum(Cdnx[d, n] for n in range(NNodes)) 
+                for d in range(Ndemands)]
+Ctot = sum(Ctot_per_node[n] for n in range(NNodes))
