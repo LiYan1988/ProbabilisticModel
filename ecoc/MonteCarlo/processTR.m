@@ -146,8 +146,8 @@ tic
 runtimeMonteCarlo = toc;
 
 %% Save data
-load('simuResults_1_1.mat')
-fileName = 'for_python';
-idMC = 1;
-saveDataForAllocateRegenMC(systemParameters, ...
-    TopologyStruct, DemandStruct, demandsNoise, fileName)
+% load('simuResults_1_1.mat')
+% fileName = 'for_python';
+% idMC = 1;
+% saveDataForAllocateRegenMC(systemParameters, ...
+%     TopologyStruct, DemandStruct, demandsNoise, fileName)
