@@ -124,6 +124,6 @@ model_time = time.clock()-tic
 #Ctot = sum(Ctot_per_node[n] for n in range(NNodes))
 
 #%%
-model.Params.timelimit = 10
+model.Params.timelimit = 60
 model.Params.tunetimelimit = 600
 model.tune()
