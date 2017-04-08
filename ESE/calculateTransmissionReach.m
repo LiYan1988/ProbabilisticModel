@@ -33,7 +33,8 @@ tic;
 for i=1:length(bitRates)
     bitRate = bitRates(i);
     parfor j=1:length(spectralEfficiency)
-        Nreach(i, j) = findReach(bitRate, spectralEfficiency(j), 80, 15, systemParameters);
+        nChannels = 4000/(bitRate/spectralEfficiency(j));
+        Nreach(i, j) = findReach(bitRate, spectralEfficiency(j), nChannels, 15, systemParameters);
     end
 end
 runtime = toc;
