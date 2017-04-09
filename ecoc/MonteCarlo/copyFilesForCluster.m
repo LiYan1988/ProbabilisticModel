@@ -4,9 +4,10 @@ close all;
 rng(321289);
 %% define simulation parameters
 % system parameters
+routingScheme = 'MD';
 modulationFormat = 'PM_QPSK';
 Cmax = 2000;
-CircuitWeight = 0.0001;
+CircuitWeight = 0.5/Cmax;
 RegenWeight = 1;
 outageProb = 0.01;
 
@@ -34,7 +35,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc1';
+simulationName = 'mc2';
 partition = 'economy';
 account = 'maite_group';
 matlabVersion = 'R2016a';
@@ -72,7 +73,7 @@ for arrayId = 1:nArray
     A{37} = sprintf('systemParameters.modulationFormat = ''%s'';', ...
         modulationFormat);
     A{38} = sprintf('systemParameters.Cmax = %d;', Cmax);
-    A{39} = sprintf('systemParameters.CircuitWeight = %.2f;', ...
+    A{39} = sprintf('systemParameters.CircuitWeight = %.2e;', ...
         CircuitWeight);
     A{40} = sprintf('systemParameters.RegenWeight = %.2f;', ...
         RegenWeight);
@@ -88,6 +89,7 @@ for arrayId = 1:nArray
     A{86} = sprintf('Nbins = %d;', Nbins);
     A{87} = sprintf('Mbins = %d;', Mbins);
     A{88} = sprintf('Sbins = %d;', Sbins);
+    A{89} = sprintf('RoutingScheme = ''%s'';', routingScheme);
     
     % Write cell A into txt
     fid = fopen(fileName, 'w');

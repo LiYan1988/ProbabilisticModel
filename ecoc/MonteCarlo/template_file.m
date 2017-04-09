@@ -82,10 +82,11 @@ p2 = 20;
 ndprob=0.8;
 ndmax=3;
 NMonteCarlo = 1;
-Repeat = 3;
+Repeat = 1;
 Nbins = 65;
 Mbins = 50;
 Sbins = 15;
+RoutingScheme = 'MDMR';
 %####################################################################
 
 SimulationParameters = struct();
@@ -104,7 +105,8 @@ SimulationParameters.Sbins = Sbins;
 
 %% Monte Carlo
 x = load('templateDemandStruct.mat');
-DemandStructTemplate = x.DemandStruct;
+DemandStructTemplate = getfield(x, ...
+    sprintf('DemandStruct%s', RoutingScheme));
 clear x;
 simulateNoiseRandomDemand(systemParameters, ...
     TopologyStruct, SimulationParameters, DemandStructTemplate, simuID);

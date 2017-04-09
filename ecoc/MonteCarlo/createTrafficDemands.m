@@ -1,7 +1,15 @@
 function [DemandStruct] = createTrafficDemands(TopologyStruct, ...
     Ndemands, BandwidthLowerBound, BandwidthUpperBound, distribution, ...
-    ndprob, ndmax, a2aFlag)
+    ndprob, ndmax, a2aFlag, fixRouting)
 % create traffic demands for a network
+% a2aFlag, true: generate all-to-all traffic, false: generate half traffic
+% fixRouting, 0: dijstra shortest path, 1: min regen, 2: min distance,
+%             3: min cost, 4: min distance min cost
+
+if nargin<9
+    fixRouting = 0;
+end
+bhRouting = load('ResultsBH.mat'); % the fixed routing scheme
 
 if nargin<8
     % by default generate all-to-all traffic
@@ -23,7 +31,6 @@ if nargin<4
     BandwidthLowerBound = 30;
     BandwidthUpperBound = 100;
 end
-
 
 NodeList = TopologyStruct.NodeList;
 NNodes = TopologyStruct.NNodes;
@@ -62,16 +69,20 @@ elseif strcmp(distribution, 'normal')
     % DataRateLowerBound is mean, DataRateUpperBound is std
     demandDataRate = round(normrnd(BandwidthLowerBound, BandwidthUpperBound, ...
         [Ndemands, 1]));
+    demandDataRate = max(30, demandDataRate);
 end
 demands = [demandSourceDestinationPairs, demandDataRate];
 
+%%
 demandsMatrix = zeros(Ndemands, NLinks+3);
 demandsMatrix(:, 1:3) = demands;
 demandPaths = cell(Ndemands, 1);
 demandPathLinks = cell(Ndemands, 1);
 demandPathLength = zeros(Ndemands, 1);
 for n=1:Ndemands
-    [shortestPath, pathLength] = dijkstra(NetworkCost, demands(n, 1), demands(n, 2));
+    %     [shortestPath, pathLength] = dijkstra(NetworkCost, demands(n, 1), demands(n, 2));
+    [shortestPath, pathLength] = loadFixedPath(demands(n, 1), ...
+        demands(n, 2), bhRouting, fixRouting);
     demandPaths{n} = shortestPath;
     demandPathLength(n) = pathLength;
     pathLinks = [shortestPath(1:end-1)', shortestPath(2:end)'];
@@ -130,3 +141,23 @@ DemandStruct.a2aFlag = a2aFlag;
 DemandStruct.ndflag = ndflag;
 DemandStruct.ndprob = ndprob;
 DemandStruct.ndmax = ndmax;
+
+end
+
+function [path, cost] = loadFixedPath(s, t, bhRouting, fixRouting)
+if t<s
+    x=s;
+    s=t;
+    t=x;
+end
+
+if fixRouting==0
+    % dijstra routing
+    [path, cost] = dijkstra(bhRouting.networkCostMatrix, s, t);
+else
+    paths = getfield(bhRouting, sprintf('paths%d', fixRouting));
+    costs = getfield(bhRouting, sprintf('demandCost%d', fixRouting));
+    path = paths{s, t};
+    cost = costs(s, t);
+end
+end

@@ -1,4 +1,4 @@
-function [RS, Rp, Cd, cost, paths, D] = barebone(networkCostMatrix, tr, c_r, c_m)
+function [RS, Cdn, Cd, Cn, paths, demandCost] = barebone(networkCostMatrix, tr, c_r, c_m)
 
 N = size(networkCostMatrix, 1); % number of nodes
 C = 1:N;
@@ -8,103 +8,71 @@ Eadj = Asap<=tr; % adjacent matrix of augment graph
 Ecost = Eadj;
 P = Eadj; % initial path matrix
 RS = []; % regen sites
-tmp = networkCostMatrix;
-tmp(isinf(tmp)) = 0;
+% tmp = networkCostMatrix;
+tmp = Asap.*Eadj;
+tmp(tmp==0) = inf;
 newCost = c_r*Ecost+c_m*tmp;
 newCost(isnan(newCost)) = 0;
+newCost(isinf(newCost)) = 0; % for graphallshortestpaths
 D = graphallshortestpaths(sparse(newCost)); % cost
 
-Rp = [];
-% for i=1:N
-%     tmpAsap = D;
-%     tmpAsap(i, :) = [];
-%     tmpAsap(:, i) = [];
-%     tmpCost = newCost;
-%     tmpCost(i, :) = [];
-%     tmpCost(:, i) = [];
-%     rmvAsap = graphallshortestpaths(sparse(tmpCost));
-%     aaa = tmpAsap-rmvAsap;
-%     Eadjtmp = Eadj;
-%     Eadjtmp(i, :) = [];
-%     Eadjtmp(:, i) = [];
-%     bbb = aaa.*(1-Eadjtmp);
-% %     if min(bbb(:))<0
-% %         Rp(end+1) = i;
-% %     end
-%         flag = true;
-%         for s=1:N-1
-%             for t=1:N-1
-%                 if Eadjtmp(s, t)==0 && aaa(s, t)<0
-%                     flag = false;
-%                     break
-%                 end
-%             end
-%             if ~flag
-%                 break
-%             end
-%         end
-%         if ~flag
-%             Rp(end+1) = i;
-%         end
-% end
-
-C(Rp) = [];
-for i=1:length(Rp)
-    P = updateP(P, D, Rp(i));
-end
-RS = Rp;
-
-Cd = zeros(nchoosek(N, 2), N);
+RS = [];
+Cdn = cell(N, N);
+Cd = zeros(N);
+Cn = zeros(N, 1);
 while sum(P(:))<N*N && length(RS)<N && ~isempty(C)
     % select cb, the best node
     r = rank2(P, D);
     cb = find(r==max(r));
-    [P, Cd] = updateP(P, D, cb(1), Cd);
+    [P, Cdn, Cd, Cn] = updateP(P, D, cb(1), Cdn, Cd, Cn);
     % update RS
     RS(end+1) = cb(1);
     % update C
     C(C==cb(1)) = [];
 end
 
-% newCost2 = newCost;
-% newCost2(newCost2==0) = inf;
-% Cd = zeros(nchoosek(N, 2), N);
-% n = 1;
-% for s=1:N
-%     for t=s+1:N
-%         [path, ~] = dijkstra(newCost2, s, t);
-%         for i=2:length(path)-1
-%             if ismember(path(i), RS)
-%                 Cd(n, path(i)) = 1;
-%             end
-%         end
-%         n = n+1;
-%     end
-% end
-
 %% find shortest paths
+load('CoronetASAP.mat')
 paths = cell(N, N);
-cost = zeros(N, N);
-newCost1 = newCost;
-newCost1(newCost1==0) = inf;
+demandCost = zeros(N, N);
 for s=1:N
-    for t=s+1:N
-        rs = find(Cd((s-1)*N+t, :));
-        if isempty(rs)
-            paths{s, t} = dijkstra(newCost1, s, t);
+    for t=1:N
+        % find RS on path
+        %         [tmppath, tmp] = dijkstra(newCost2, s, t);
+        %         tmppath = tmppath(2:end-1);
+        tmppath = Cdn{s, t};
+        if s~=t
+            demandCost(s, t) = D(s, t)-c_r; % only intermediate nodes are RS
+        end
+        if isempty(tmppath)
+            % if no RS used, find all nodes on path
+            paths{s, t} = ASAPpath{s, t};
             continue
         end
-        [tmpPath, d] = dijkstra(newCost1, s, rs(1));
-        cost(s, t) = d;
-        paths{s, t} = tmpPath;
-        for n=2:length(rs)
-            [tmpPath, d] = dijkstra(newCost1, rs(n-1), rs(n));
-            cost(s, t) = cost(s, t)+d;
-            paths{s, t}(end+1:end+length(tmpPath)-2) = tmpPath(2:end-1);
+        % if RS used
+        tmpInterPath = ASAPpath{s, tmppath(1)};
+        paths{s, t} = tmpInterPath;
+        for n=2:length(tmppath)
+            tmpInterPath = ASAPpath{tmppath(n-1), tmppath(n)};
+            paths{s, t}(end+1:end+length(tmpInterPath)-2) = tmpInterPath(2:end-1);
         end
-        [tmpPath, d] = dijkstra(newCost1, rs(end), t);
-        cost(s, t) = cost(s, t)+d-c_r;
-        paths{s, t}(end+1:end+length(tmpPath)-1) = tmpPath(2:end);
-%         cost(s, t) = cost(s, t)*c_m+length(rs)*c_r;
+        tmpInterPath = ASAPpath{tmppath(end), t};
+        paths{s, t}(end+1:end+length(tmpInterPath)-1) = tmpInterPath(2:end);
     end
 end
+
+% RSonPath = cell(N, N);
+% CostonPath = zeros(N, N);
+% newCost2 = newCost;
+% newCost2(newCost2==0) = inf;
+% circuit = zeros(nchoosek(N, 2), N);
+% nnn = 1;
+% for s=1:N
+%     for t=s+1:N
+%         [tmppath, tmp] = dijkstra(newCost2, s, t);
+%         RSonPath{s, t} = tmppath(2:end-1);
+%         CostonPath(s, t) = tmp-c_r;
+%         circuit(nnn, RSonPath{s, t}) = 1;
+%         nnn = nnn+1;
+%     end
+% end

@@ -98,17 +98,17 @@ SimulationParameters.Mbins = Mbins;
 SimulationParameters.Sbins = Sbins;
 
 %% Monte Carlo
-tic
-simulateNoiseRandomDemand(systemParameters, ...
-    TopologyStruct, SimulationParameters, simuID);
-runtimeMonteCarlo = toc;
+% tic
+% simulateNoiseRandomDemand(systemParameters, ...
+%     TopologyStruct, SimulationParameters, simuID);
+% runtimeMonteCarlo = toc;
 
 %% Sample noise
-% tic
-% SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
-%     TopologyStruct, SimulationParameters);
-% runtimeSample = toc;
-% save('SampleNoise.mat', 'SampleNoise');
+tic
+SampleNoise = sampleNoiseRandomDemand(systemParameters, ...
+    TopologyStruct, SimulationParameters);
+runtimeSample = toc;
+save('SampleNoise.mat', 'SampleNoise');
 
 %% Regen for Monte Carlo
 % tic

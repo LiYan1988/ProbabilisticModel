@@ -1,5 +1,5 @@
 function [ demandsNoise ] = simulateOneByOne(systemParameters, ...
-    TopologyStruct, DemandStruct, NMonteCarlo, Nsamples)
+    TopologyStruct, DemandStruct, NMonteCarlo)
 % simulate noise distribution by allocating demands one by one
 
 %% extract parameters
@@ -63,6 +63,7 @@ for i=1:NMonteCarlo
     demandsNoiseALL(:, i) = sum(noiseTemp.ALL, 2);
     demandsNoiseXCIUB(:, i) = sum(noiseTemp.XCIUB, 2);
     demandsNoiseXCIUBPerLink(:, :, i) = noiseTemp.XCIUB;
+    demandsNoiseALLUBPerLink(:, :, i) = noiseTemp.ALLUB;
     demandsNoiseALLUB(:, i) = sum(noiseTemp.ALLUB, 2);
     demandsNoiseSCI(:, i) = sum(noiseTemp.SCI, 2);
     linkNoiseXCI(:, i) = sum(noiseTemp.XCI, 1);
@@ -116,6 +117,7 @@ demandsNoise.demandNLI = demandsNoiseXCI+demandsNoiseSCI;
 demandsNoise.demandALL = demandsNoiseALL;
 demandsNoise.demandXCIUB = demandsNoiseXCIUB;
 demandsNoise.XCIUBPerLink = demandsNoiseXCIUBPerLink;
+demandsNoise.ALLUBPerLink = demandsNoiseALLUBPerLink;
 demandsNoise.demandALLUB = demandsNoiseALLUB;
 demandsNoise.demandsFrequency = demandsFrequency;
 demandsNoise.linkSCI = linkNoiseSCI;
