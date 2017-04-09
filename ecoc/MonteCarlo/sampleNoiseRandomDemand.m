@@ -1,5 +1,5 @@
 function [ SampleNoise ] = sampleNoiseRandomDemand(systemParameters, ...
-    TopologyStruct, SimulationParameters)
+    TopologyStruct, SimulationParameters, DemandStruct)
 % Sample noise for all demands on each link according to (3) in the
 % document
 %
@@ -12,6 +12,13 @@ function [ SampleNoise ] = sampleNoiseRandomDemand(systemParameters, ...
 % rho: 2.11e-3 (GHz)^(-2)
 % Nase: 3.58e-2 (muW/GHz)
 
+if nargin<4
+    dsflag = false;
+else
+    dsflag = true;
+end
+
+%%
 p1 = SimulationParameters.p1;
 p2 = SimulationParameters.p2;
 ndprob = SimulationParameters.ndprob;
@@ -51,8 +58,10 @@ rho = rho*1e18;
 Nase = Nase*1e15;
 
 %% calculate NumberOfDemandsOnLink with ndmax
-DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
-    p1, p2, distributionName, 1, ndmax);
+if ~dsflag
+    DemandStruct = createTrafficDemands(TopologyStruct, Ndemands, ...
+        p1, p2, distributionName, 1, ndmax);
+end
 demandsMatrix = DemandStruct.demandsMatrix;
 demandsTable = DemandStruct.demandsTable;
 SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
@@ -110,7 +119,7 @@ NoiseMax = systemParameters.psd/...
     systemParameters.modulationFormat);
 edgeMin = 0; % it must be 0
 % Mbins bins for 0 to NoiseMax noise, and Nbins-Mbins bins for bigger noise
-edgeMax = NoiseMax/Mbins*Nbins; 
+edgeMax = NoiseMax/Mbins*Nbins;
 
 edges = linspace(edgeMin, edgeMax, Nbins+1);
 edges(end) = inf;
