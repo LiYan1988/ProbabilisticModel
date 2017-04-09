@@ -11,7 +11,7 @@ networkAdjacentMatrix = coronet.networkAdjacentMatrix;
 se = 4;
 bandwidth = 200;
 tr = findTR(bandwidth, se);
-tr = 22;
+% tr = 22;
 %%
 N = size(networkCostMatrix, 1); % number of nodes
 
@@ -25,30 +25,30 @@ RS = []; % regen sites
 D = graphallshortestpaths(sparse(Eadj)); % D = ASAP(Eadj)
 
 Rp = []; % R+
-for i=1:N
-    tmpAsap = D;
-    tmpAsap(i, :) = [];
-    tmpAsap(:, i) = [];
-    tmpCost = Eadj;
-    tmpCost(i, :) = [];
-    tmpCost(:, i) = [];
-    rmvAsap = graphallshortestpaths(sparse(tmpCost));
-    if norm(tmpAsap-rmvAsap)>0
-        Rp(end+1) = i;
-    end
-end
-
-C(Rp) = []; % delete R+ from the candidate set
-for i=1:length(Rp)
-    P = updateP(P, D, Rp(i));
-end
+% for i=1:N
+%     tmpAsap = D;
+%     tmpAsap(i, :) = [];
+%     tmpAsap(:, i) = [];
+%     tmpCost = Eadj;
+%     tmpCost(i, :) = [];
+%     tmpCost(:, i) = [];
+%     rmvAsap = graphallshortestpaths(sparse(tmpCost));
+%     if norm(tmpAsap-rmvAsap)>0
+%         Rp(end+1) = i;
+%     end
+% end
+% 
+% C(Rp) = []; % delete R+ from the candidate set
+% for i=1:length(Rp)
+%     P = updateP(P, D, Rp(i));
+% end
 RS = Rp; % initialize the candidate set
-
+Cd = zeros(N^2, N);
 while sum(P(:))<N*N && length(RS)<N && ~isempty(C)
     % select cb, the best node
     r = rank2(P, D);
     cb = find(r==max(r)); 
-    P = updateP(P, D, cb(1));
+    [P, Cd] = updateP(P, D, cb(1), Cd);
     % update RS
     RS(end+1) = cb(1);
     % update C
@@ -61,8 +61,8 @@ fprintf('At least %d regen sites.\n', length(Rp))
 %%
 c_r = 1;
 c_m = 0;
-[RS1, Rp1, Ctot1] = barebone(networkCostMatrix, tr, c_r, c_m);
-fprintf('Min-Regeneration: %d\n', length(RS1))
+[RS1, Rp1, Ctot1, cost1, paths1, D1] = barebone(networkCostMatrix, tr, c_r, c_m);
+% fprintf('Min-Regeneration: %d\n', length(RS1))
 fprintf('Min-Regeneration: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS1), ...
     length(Rp1), sum(Ctot1(:)))
 
@@ -75,13 +75,17 @@ fprintf('Min-Distance: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS2), ...
 c_r = 1;
 c_m = 1;
 [RS3, Rp3, Ctot3] = barebone(networkCostMatrix, tr, c_r, c_m);
-fprintf('Min-Cost: %d\n', length(RS3))
+% fprintf('Min-Cost: %d\n', length(RS3))
 fprintf('Min-Cost: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS3), ...
     length(Rp3), sum(Ctot3(:)))
 
 c_r = 1;
 c_m = 1000;
 [RS4, Rp4, Ctot4] = barebone(networkCostMatrix, tr, c_r, c_m);
-fprintf('Min-Distance-Min-Regeneration: %d\n', length(RS4))
+% fprintf('Min-Distance-Min-Regeneratio n: %d\n', length(RS4))
 fprintf('Min-Distance-Min-Regeneration: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS4), ...
     length(Rp4), sum(Ctot4(:)))
+
+%%
+[~, Csort] = sort(sum(Ctot1, 1), 'descend');
+Csort = Csort(1:length(RS1));
