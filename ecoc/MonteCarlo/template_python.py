@@ -9,7 +9,7 @@ Created on Fri Apr  7 09:14:36 2017
 from solve_MILP import *
 import os
 
-os.chdir('/scratch/ly6j/backup/probabilisticModel/new_mc1')
+os.chdir('/scratch/ly6j/backup/probabilisticModel/mc2p')
 
 kwargs = {'mipfocus':1, 'presolve':2, 'timelimit':200, 'symmetry':1, 'heuristics':0.6}
 

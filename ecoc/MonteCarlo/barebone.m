@@ -51,13 +51,13 @@ for s=1:N
         end
         % if RS used
         tmpInterPath = ASAPpath{s, tmppath(1)};
-        paths{s, t} = tmpInterPath;
+        paths{s, t} = tmpInterPath(1:end-1);
         for n=2:length(tmppath)
             tmpInterPath = ASAPpath{tmppath(n-1), tmppath(n)};
-            paths{s, t}(end+1:end+length(tmpInterPath)-2) = tmpInterPath(2:end-1);
+            paths{s, t}(end+1:end+length(tmpInterPath)-1) = tmpInterPath(1:end-1);
         end
         tmpInterPath = ASAPpath{tmppath(end), t};
-        paths{s, t}(end+1:end+length(tmpInterPath)-1) = tmpInterPath(2:end);
+        paths{s, t}(end+1:end+length(tmpInterPath)) = tmpInterPath;
     end
 end
 

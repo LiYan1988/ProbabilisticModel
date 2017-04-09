@@ -73,9 +73,9 @@ a2aFlag = true;
 
 routingNames = {'dijstra', 'min-gen', 'min-dist', 'min-cost', 'mdmr'};
 
-fixRouting = 1;
-DemandStructMG = createTrafficDemands(TopologyStruct, ...
-   Ndemands, p1, p2, distributionName, ndprob, ndmax, a2aFlag, fixRouting);
+% fixRouting = 1;
+% DemandStructMG = createTrafficDemands(TopologyStruct, ...
+%    Ndemands, p1, p2, distributionName, ndprob, ndmax, a2aFlag, fixRouting);
 
 fixRouting = 2;
 DemandStructMD = createTrafficDemands(TopologyStruct, ...
