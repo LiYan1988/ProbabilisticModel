@@ -75,16 +75,14 @@ fprintf('Min-Distance: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS2), ...
 c_r = 1;
 c_m = 1;
 [RS3, Rp3, Ctot3, cost3, paths3, D3] = barebone(networkCostMatrix, tr, c_r, c_m);
-% fprintf('Min-Cost: %d\n', length(RS3))
 fprintf('Min-Cost: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS3), ...
     length(Rp3), sum(Ctot3(:)))
 
 c_r = 1;
 c_m = 1000;
 [RS4, Rp4, Ctot4, cost4, paths4, D4] = barebone(networkCostMatrix, tr, c_r, c_m);
-% fprintf('Min-Distance-Min-Regeneratio n: %d\n', length(RS4))
 fprintf('Min-Distance-Min-Regeneration: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS4), ...
-    length(Rp4), sum(Ctot4(:)))
+   length(Rp4), sum(Ctot4(:)))
 
 save('ResultsBH.mat')
 %%
