@@ -1,15 +1,16 @@
-function [RS, Rp] = barebone(networkCostMatrix, tr, c_r, c_m)
+function [RS, Rp, Cd] = barebone(networkCostMatrix, tr, c_r, c_m)
 
 N = size(networkCostMatrix, 1); % number of nodes
 C = 1:N;
 Asap = graphallshortestpaths(sparse(networkCostMatrix)); % ASAP in #span
 
 Eadj = Asap<=tr; % adjacent matrix of augment graph
+Ecost = Eadj;
 P = Eadj; % initial path matrix
 RS = []; % regen sites
 tmp = networkCostMatrix;
 tmp(isinf(tmp)) = 0;
-newCost = c_r*Eadj+c_m*tmp;
+newCost = c_r*Ecost+c_m*tmp;
 newCost(isnan(newCost)) = 0;
 D = graphallshortestpaths(sparse(newCost)); % cost
 
@@ -62,4 +63,20 @@ while sum(P(:))<N*N && length(RS)<N && ~isempty(C)
     RS(end+1) = cb(1);
     % update C
     C(C==cb(1)) = [];
+end
+
+newCost2 = newCost;
+newCost2(newCost2==0) = inf;
+Cd = zeros(nchoosek(N, 2), N);
+n = 1;
+for s=1:N
+    for t=s+1:N
+        [path, ~] = dijkstra(newCost2, s, t);
+        for i=2:length(path)-1
+            if ismember(path(i), RS)
+                Cd(n, path(i)) = 1;
+            end
+        end
+        n = n+1;
+    end
 end

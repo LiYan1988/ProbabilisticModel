@@ -61,20 +61,27 @@ fprintf('At least %d regen sites.\n', length(Rp))
 %%
 c_r = 1;
 c_m = 0;
-[RS1] = barebone(networkCostMatrix, tr, c_r, c_m);
+[RS1, Rp1, Ctot1] = barebone(networkCostMatrix, tr, c_r, c_m);
 fprintf('Min-Regeneration: %d\n', length(RS1))
+fprintf('Min-Regeneration: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS1), ...
+    length(Rp1), sum(Ctot1(:)))
 
 c_r = 0;
 c_m = 1;
-RS2 = barebone(networkCostMatrix, tr, c_r, c_m);
-fprintf('Min-Distance: %d\n', length(RS2))
+[RS2, Rp2, Ctot2] = barebone(networkCostMatrix, tr, c_r, c_m);
+fprintf('Min-Distance: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS2), ...
+    length(Rp2), sum(Ctot2(:)))
 
 c_r = 1;
 c_m = 1;
-RS3 = barebone(networkCostMatrix, tr, c_r, c_m);
+[RS3, Rp3, Ctot3] = barebone(networkCostMatrix, tr, c_r, c_m);
 fprintf('Min-Cost: %d\n', length(RS3))
+fprintf('Min-Cost: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS3), ...
+    length(Rp3), sum(Ctot3(:)))
 
 c_r = 1;
 c_m = 1000;
-RS4 = barebone(networkCostMatrix, tr, c_r, c_m);
+[RS4, Rp4, Ctot4] = barebone(networkCostMatrix, tr, c_r, c_m);
 fprintf('Min-Distance-Min-Regeneration: %d\n', length(RS4))
+fprintf('Min-Distance-Min-Regeneration: #RS: %d, #Rp: %d, #circuit: %d\n', length(RS4), ...
+    length(Rp4), sum(Ctot4(:)))
