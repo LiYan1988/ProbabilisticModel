@@ -1,7 +1,8 @@
 clc;
 clear;
 close all;
-rng(321289);
+% rng(321289);
+rng(385947);
 %% define simulation parameters
 % system parameters
 routingScheme = 'MD';
@@ -12,8 +13,8 @@ RegenWeight = 1;
 outageProb = 0.01;
 
 % simulation parameters
-nArray = 100; % how many array jobs
-ntotal = 100; % #of different demands
+nArray = 50; % how many array jobs
+ntotal = 50; % #of different demands
 distributionName = 'normal';
 p1 = 200; % mean of normal distribution
 p2 = 20; % std of normal distribution
@@ -35,7 +36,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
-simulationName = 'mc2';
+simulationName = 'mc2_2';
 partition = 'economy';
 account = 'maite_group';
 matlabVersion = 'R2016a';

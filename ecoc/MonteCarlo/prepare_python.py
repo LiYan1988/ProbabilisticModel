@@ -9,6 +9,8 @@ Created on Fri Apr  7 09:46:27 2017
 import os
 import shutil
 import tempfile
+import numpy as np
+import scipy.io as sio
 from subprocess import call
 
 def copy_template(src, dst, replace_lines):
@@ -47,9 +49,10 @@ def change_file(file_path, replace_lines):
     os.rename(abs_path, file_path)
 
 # simulation parameters
-simulation_name = 'mc2p' 
+simulation_name = 'mc2p_2' 
 partition = 'economy'
 group = 'maite_group' 
+benchmark_name = 'RS2'
 
 # input file names
 python_file_template = simulation_name+'_{}.py'
@@ -57,7 +60,7 @@ slurm_file_template = simulation_name+'_{}.slurm'
 
 # sbatch parameters
 ntasks_per_node = 1
-cpus_per_task = 2
+cpus_per_task = 4
 mem_per_cpu = 4000
 time_days = 2
 time_hours = 0
@@ -65,7 +68,7 @@ time_minutes = 0
 time_seconds = 0
 
 # python parameters
-kwargs = {'mipfocus':1, 'presolve':2, 'timelimit':200, 'symmetry':1, 
+kwargs = {'mipfocus':1, 'presolve':2, 'timelimit':1200, 'symmetry':1, 
           'heuristics':0.55, 'threads':cpus_per_task}
 
 if not os.path.exists(simulation_name):
@@ -76,17 +79,17 @@ shutil.copy('template_slurm_python.slurm', simulation_name)
 shutil.copy('run_batch.py', simulation_name)
 os.chdir(simulation_name)
 
-array_id = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
-            20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
-            38, 39, 40, 41, 42, 43, 44, 45, 56, 57, 58, 70, 71, 72, 73, 74, 75,
-            76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
+array_id = np.arange(1, 51, 1)
 
 for batch_id in array_id:
     # write python files
     python_src = "template_python.py"
+    line11 = "os.chdir('/scratch/ly6j/backup/probabilisticModel/{}')\n".format(simulation_name)
     line13 = "kwargs = {}\n".format(kwargs.__repr__())
+    m = sio.loadmat('../ResultsBH.mat')
+    line14 = "Ii_hint = {}\n".format(list(m[benchmark_name][0]).__repr__())
     line15 = "array_id = {}\n".format(batch_id)
-    replace_lines = {15:line15, 13:line13}
+    replace_lines = {11:line11, 15:line15, 13:line13, 14:line14}
     python_dst = python_file_template.format(batch_id)
     copy_template(python_src, python_dst, replace_lines)
 
