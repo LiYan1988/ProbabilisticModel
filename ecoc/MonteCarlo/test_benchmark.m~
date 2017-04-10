@@ -95,4 +95,4 @@ c_m = 1e6;
 [RS4, Cdn4, Cd4, Cn4, paths4, demandCost4] = barebone(networkCostMatrix, tr, c_r, c_m);
 fprintf('Min-Distance-Min-Regeneration: #RS: %d, #circuit: %d\n', length(RS4), sum(Cn4))
 
-save('ResultsBH20.mat')
+save('ResultsBH2-.mat')
