@@ -19,6 +19,7 @@ end
 pathOnNode = pathOnNode-2;
 NodeProbRO = pathOnNode./sum(pathOnNode);
 
+save('RSMD2.mat', 'Cn_sort_idx')
 %% scatter of RS prob. vs node prob. estimated by the routing scheme
 % figure();
 % hold on;
