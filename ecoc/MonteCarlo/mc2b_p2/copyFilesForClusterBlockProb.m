@@ -6,8 +6,7 @@ rng(97345);
 %% define simulation parameters
 routingScheme = 'MD';
 modulationFormat = 'PM_QPSK';
-alg = 'benchmark';
-simulationName = 'mc2b_bm';
+alg = 'proposed2';
 nRS = 20;
 % define cluster parameters
 nodes = 1;
@@ -19,6 +18,7 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
+simulationName = 'mc2b_p2';
 partition = 'economy';
 account = 'maite_group';
 matlabVersion = 'R2016a';

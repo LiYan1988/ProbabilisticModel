@@ -1,0 +1,6 @@
+Minimize
+ 
+Subject To
+ c4[1703,25]: Ndn[1703,18] <= -0.367305858193791
+Bounds
+End

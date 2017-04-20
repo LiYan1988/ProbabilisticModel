@@ -1,14 +1,31 @@
 clc;
 clear;
 close all;
-rng(97345);
-
+% rng(321289);
+rng(385947);
 %% define simulation parameters
+% system parameters
 routingScheme = 'MD';
 modulationFormat = 'PM_QPSK';
-alg = 'benchmark';
-simulationName = 'mc2b_bm';
-nRS = 20;
+Cmax = 2000;
+CircuitWeight = 0.5/Cmax;
+RegenWeight = 1;
+outageProb = 0.01;
+
+% simulation parameters
+nArray = 50; % how many array jobs
+ntotal = 50; % #of different demands
+distributionName = 'normal';
+p1 = 200; % mean of normal distribution
+p2 = 20; % std of normal distribution
+ndprob=1; % probability of having a demand
+ndmax=1; % maximum number of demands a node pair can have
+NMonteCarlo = 50; % number of simulations in one Monte Carlo simulation
+Repeat = round(ntotal/nArray); % number of different total demands per job
+Nbins = 65;
+Mbins = 50;
+Sbins = 15;
+
 % define cluster parameters
 nodes = 1;
 ntasks_per_task = 1;
@@ -19,29 +36,10 @@ nday = 0;
 nhrs = 15;
 nmin = 0;
 nsec = 0;
+simulationName = 'mc2_2';
 partition = 'economy';
 account = 'maite_group';
 matlabVersion = 'R2016a';
-
-% system parameters
-Cmax = 2000;
-CircuitWeight = 0.5/Cmax;
-RegenWeight = 1;
-outageProb = 0.01;
-
-% simulation parameters
-nArray = 10; % how many array jobs
-ntotal = 1; % #of different demands
-distributionName = 'normal';
-p1 = 200; % mean of normal distribution
-p2 = 50; % std of normal distribution
-ndprob=1; % probability of having a demand
-ndmax=1; % maximum number of demands a node pair can have
-NMonteCarlo = 40; % number of simulations in one Monte Carlo simulation
-Repeat = 1; % number of different total demands per job
-Nbins = 65;
-Mbins = 50;
-Sbins = 15;
 
 %% write array jobs
 if ~exist(simulationName, 'dir')
@@ -60,7 +58,7 @@ end
 id = 1;
 for arrayId = 1:nArray
     fileName = sprintf('jobArray%d.m', id);
-    fid = fopen('template_file_block_probability.m','r');
+    fid = fopen('template_file.m','r');
     i = 1;
     tline = fgetl(fid);
     A{i} = tline;
@@ -93,8 +91,6 @@ for arrayId = 1:nArray
     A{87} = sprintf('Mbins = %d;', Mbins);
     A{88} = sprintf('Sbins = %d;', Sbins);
     A{89} = sprintf('RoutingScheme = ''%s'';', routingScheme);
-    A{90} = sprintf('alg = ''%s'';', alg);
-    A{91} = sprintf('nRS = %d;', nRS);
     
     % Write cell A into txt
     fid = fopen(fileName, 'w');
