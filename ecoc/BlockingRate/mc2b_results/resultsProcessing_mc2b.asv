@@ -4,11 +4,12 @@ close all;
 
 %% Change names and move to new folder
 newFolderName = 'mc2b0';
-if ~exist(newFolderName, 'dir')
-    mkdir(new)
-end
-
 dataDirs = {'mc2b_bm', 'mc2b_p1', 'mc2b_p2'};
+N = 
+
+if ~exist(newFolderName, 'dir')
+    mkdir(newFolderName)
+end
 
 for dirIdx = 1:length(dataDirs)
     oldFolder = cd(dataDirs{dirIdx});
@@ -22,12 +23,20 @@ for dirIdx = 1:length(dataDirs)
         name = lists(i).name;
         num = strsplit(name, '_');
         num = strsplit(num{2}, '.');
-        num = str2num(num{1});
+        num = str2double(num{1});
         newName = sprintf('../mc2b0/BP_%s_%d.mat', dataDirs{dirIdx}, num);
         copyfile(name, newName);
     end
     cd(oldFolder);
 end
 
-%% 
-cd('
+%% Extract useful data
+cd(newFolderName);
+clc;
+clear;
+
+for dirIdx = 1:length(dataDirs)
+    for num=1:
+    matName = sprintf('../mc2b0/BP_%s_%d.mat', dataDirs{dirIdx}, num);
+    tmp = load();
+end
