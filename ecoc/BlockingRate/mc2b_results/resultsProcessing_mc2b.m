@@ -45,8 +45,24 @@ for dirIdx = 1:length(dataDirs)
 end
 BlockHistoryAve = squeeze(mean(BlockHistory, 2));
 clear dirIdx i lists matName name newName num oldFolder tmp
-save('ExtractedData.mat')
 
+%%
+% load routing
+templateDataStruct = load('../../templateDemandStruct.mat');
+DemandStructMD = templateDataStruct.DemandStructMD;
+N = 75;
+pathOnNode = zeros(N, 1);
+for i=1:N
+    pathOnNode(i) = length(DemandStructMD.SetOfDemandsOnNode{i});
+end
+
+pathOnNode = pathOnNode-2;
+NodeProbRO = pathOnNode./sum(pathOnNode);
+[NodeProbROSorted, NodeProbROSortedIdx] = sort(NodeProbRO, 'descend');
+clear DemandStructMD i newFolderName templateDataStruct
+cd('..')
+save('ExtractedData.mat')
+save('NodeProbIdxBenchmark.mat', 'NodeProbROSortedIdx')
 %%
 figure1 = figure;
 
@@ -65,3 +81,4 @@ set(semilogy1(3),'DisplayName','Rank by #circuit');
 legend('show', 'location', 'best')
 xlabel('Number of demands')
 ylabel('Blocking Probability')
+
