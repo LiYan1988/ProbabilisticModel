@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr  7 09:14:36 2017
+
+@author: li
+"""
+
+from solve_MILP import *
+import os
+
+os.chdir('/scratch/ly6j/backup/probabilisticModel/mc')
+
+kwargs = {'mipfocus':1, 'presolve':2, 'timelimit':200, 'symmetry':1, 'heuristics':0.6}
+Ii_hint = []
+array_id = 42
+mat_id = range(1, 51)
+
+for n in mat_id:
+    input_file = 'for_python_1_{}_{}.mat'.format(array_id, n)
+    output_file = 'solution_{}_{}.pkl'.format(array_id, n)
+    solve(input_file, output_file, Ii_hint, **kwargs)
