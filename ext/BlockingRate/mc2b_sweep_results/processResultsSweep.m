@@ -4,9 +4,11 @@ clear;
 
 % oldFolder = cd('Results\');
 % lists = dir();
+% mean #of established connections
 % bpBenchmark = zeros(5550, 40);
-% bpProposed1 = zeros(5550, 40);
-% bpProposed2 = zeros(5550, 40);
+% bpProposed1 = zeros(5550, 40); % RS based
+% bpProposed2 = zeros(5550, 40); % RC based
+% 90% confidence interval of #established connections
 % bpBenchmark_ci = zeros(5550, 40);
 % bpProposed1_ci = zeros(5550, 40);
 % bpProposed2_ci = zeros(5550, 40);
@@ -31,7 +33,7 @@ clear;
 %         bpProposed2_ci(:, b) = std(blockHistory, [], 2)*1.645/sqrt(40);
 %     end
 % end
-% 
+%
 % cd(oldFolder)
 % save('results.mat')
 
@@ -42,12 +44,16 @@ clear;
 load('results.mat')
 
 %%
+% 4 blocking probabilities, 40 #RSs
+% mean #established connections
 ndbp_benchmark2 = zeros(4, 40);
 ndbp_proposed1 = zeros(4, 40);
 ndbp_proposed2 = zeros(4, 40);
+% lower bound of #established connections, with 90% confidence interval
 ndbp_benchmark2_1 = zeros(4, 40);
 ndbp_proposed1_1 = zeros(4, 40);
 ndbp_proposed2_1 = zeros(4, 40);
+% upper bound of #established connections, with 90% confidence interval
 ndbp_benchmark2_2 = zeros(4, 40);
 ndbp_proposed1_2 = zeros(4, 40);
 ndbp_proposed2_2 = zeros(4, 40);
@@ -79,11 +85,52 @@ end
 % h = legend({'Benchmark', 'RS based', 'RC based'});
 % h.Interpreter = 'latex';
 
-%%
+%% Calculate gains of proposed methods, plot average over all BPs
+% DefaultColorMap = get(gca, 'colororder');
+% M = 4;
+% % average gain
+% c = zeros(40, 3, 4);
+% % lower bound of gain, 90% confidence interval
+% c1 = zeros(40, 3, 4);
+% % upper bound of gain, 90% confidence interval
+% c2 = zeros(40, 3, 4);
+% for n=M:4
+%     b = [ndbp_benchmark2(n, :)', ndbp_proposed1(n, :)', ndbp_proposed2(n, :)'];
+%     c(:, :, n) = b./repmat(b(:, 1), 1, 3)-1;
+%     b = [ndbp_benchmark2_1(n, :)', ndbp_proposed1_1(n, :)', ndbp_proposed2_1(n, :)'];
+%     c1(:, :, n) = b./repmat(b(:, 1), 1, 3)-1;
+%     b = [ndbp_benchmark2_2(n, :)', ndbp_proposed1_2(n, :)', ndbp_proposed2_2(n, :)'];
+%     c2(:, :, n) = b./repmat(b(:, 1), 1, 3)-1;
+% end
+%
+% % Plot the average gain
+% c = sum(c, 3)/(4-M+1);
+% c1 = sum(c1, 3)/(4-M+1);
+% c2 = sum(c2, 3)/(4-M+1);
+% for n=1:3
+%     c(:, n) = smooth(c(:, n), 1);
+%     c1(:, n) = smooth(c1(:, n), 1);
+%     c2(:, n) = smooth(c2(:, n), 1);
+% end
+% figure;
+% hold on;
+% plot(c1, 'linewidth', 1.2);
+% plot(c2, 'linewidth', 1.2);
+% p = plot(c, 'linewidth', 1.2);
+% set(p(1), 'linestyle', '-', 'color', DefaultColorMap(1, :));
+% set(p(2), 'linestyle', '-.', 'color', DefaultColorMap(2, :));
+% set(p(3), 'linestyle', '--', 'color', DefaultColorMap(3, :));
+% h = legend({'Benchmark', 'RS based', 'RC based'});
+% h.Interpreter = 'latex';
+
+%% Calculate gains and plot separately
 DefaultColorMap = get(gca, 'colororder');
 M = 4;
+% average gain
 c = zeros(40, 3, 4);
+% lower bound of gain, 90% confidence interval
 c1 = zeros(40, 3, 4);
+% upper bound of gain, 90% confidence interval
 c2 = zeros(40, 3, 4);
 for n=M:4
     b = [ndbp_benchmark2(n, :)', ndbp_proposed1(n, :)', ndbp_proposed2(n, :)'];
@@ -93,6 +140,8 @@ for n=M:4
     b = [ndbp_benchmark2_2(n, :)', ndbp_proposed1_2(n, :)', ndbp_proposed2_2(n, :)'];
     c2(:, :, n) = b./repmat(b(:, 1), 1, 3)-1;
 end
+
+% Plot the average gain
 c = sum(c, 3)/(4-M+1);
 c1 = sum(c1, 3)/(4-M+1);
 c2 = sum(c2, 3)/(4-M+1);

@@ -176,7 +176,7 @@ if __name__=='__main__':
     c_r = [0, 1, 1000, 1]
     c_m = [1, 0, 1, 1000]
     
-    for i in range(1):
+    for i in range(1): 
         b = BenchmarkBathula(cost_matrix, tr, c_r[i], c_m[i])
         b.solve(mipfocus=1, timelimit=72000, mipgap=0.17)
         # sp = {k:b.r[k].x for k in b.requests}
