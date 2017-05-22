@@ -125,7 +125,7 @@ end
 
 %% Calculate gains and plot separately
 DefaultColorMap = get(gca, 'colororder');
-M = 4;
+M = 1;
 % average gain
 c = zeros(40, 3, 4);
 % lower bound of gain, 90% confidence interval
@@ -141,25 +141,14 @@ for n=M:4
     c2(:, :, n) = b./repmat(b(:, 1), 1, 3)-1;
 end
 
-% Plot the average gain
-c = sum(c, 3)/(4-M+1);
-c1 = sum(c1, 3)/(4-M+1);
-c2 = sum(c2, 3)/(4-M+1);
-for n=1:3
-    c(:, n) = smooth(c(:, n), 1);
-    c1(:, n) = smooth(c1(:, n), 1);
-    c2(:, n) = smooth(c2(:, n), 1);
-end
+% 
 figure;
 hold on;
-plot(c1, 'linewidth', 1.2);
-plot(c2, 'linewidth', 1.2);
-p = plot(c, 'linewidth', 1.2);
-set(p(1), 'linestyle', '-', 'color', DefaultColorMap(1, :));
-set(p(2), 'linestyle', '-.', 'color', DefaultColorMap(2, :));
-set(p(3), 'linestyle', '--', 'color', DefaultColorMap(3, :));
-h = legend({'Benchmark', 'RS based', 'RC based'});
-h.Interpreter = 'latex';
+for n=M:4
+    plot(c(:, 1, n))
+    plot(c1(:, 2, n))
+    plot(c2(:, 3, n))
+end
 
 %% % figure;
 % m = 20;
