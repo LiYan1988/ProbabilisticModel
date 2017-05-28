@@ -1,3 +1,4 @@
 *.csv
 *.m~
 *.asv
+**/__pycache__
