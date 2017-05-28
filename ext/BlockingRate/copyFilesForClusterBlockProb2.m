@@ -39,11 +39,11 @@ Sbins = 15;
 %% Simulation parameters
 routingScheme = 'MD';
 modulationFormat = 'PM_QPSK';
-nArray = 1; % how many array jobs
-NMonteCarlo = 100; % number of simulations in one Monte Carlo simulation
+nArray = 10; % how many array jobs/traffic matrices per alg per #RSs
+NMonteCarlo = 10; % #shuffles per traffic matrices
 alg = {'proposed1', 'proposed2', 'benchmark2'};
-startNum = 3;
-nRSVector = startNum:4:40;
+startNum = 5;
+nRSVector = startNum:5:30;
 folderName = sprintf('mc2b_sweep_%d', startNum);
 if ~exist(folderName, 'dir')
     mkdir(folderName)
