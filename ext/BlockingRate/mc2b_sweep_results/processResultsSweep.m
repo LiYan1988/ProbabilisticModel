@@ -125,6 +125,7 @@ end
 
 %% Calculate gains and plot separately
 DefaultColorMap = get(gca, 'colororder');
+close all
 M = 1;
 % average gain
 c = zeros(40, 3, 4);
@@ -145,9 +146,9 @@ end
 figure;
 hold on;
 for n=M:4
-    plot(c(:, 1, n))
-    plot(c1(:, 2, n))
-    plot(c2(:, 3, n))
+    plot(c(:, 1, n), 'color', DefaultColorMap(1, :), 'linestyle', '-')
+    plot(c1(:, 2, n), 'color', DefaultColorMap(n+1, :), 'linestyle', '--')
+    plot(c2(:, 3, n), 'color', DefaultColorMap(n+1, :), 'linestyle', '-.')
 end
 
 %% % figure;
