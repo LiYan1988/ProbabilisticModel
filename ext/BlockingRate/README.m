@@ -1,5 +1,4 @@
-% This folder contains files for Monte Carlo simulations on Rivanna.
-% It is for the proposed method in ECOC 2017 paper. 
+% Simulate BP for the journal paper on Rivanna
 % Assumptions:
 % 1. Uniform PSD = 15 \muW/GHz
 % 2. Average traffic bandwidth demand: 200 GHz
@@ -10,3 +9,15 @@
 %   Matlab
 %   b. Solve MILP to allocate regen sites by python
 %   c. Monte Carlo simulations to test blocking probability by Matlab
+% 
+% New features:
+% 1. The RSs of benchmark algorithms are given by the MILPs, various costs
+% are considered.
+% 
+
+% Simulations:
+% 1. gain_over_bathula_mindist_1_16/ and gain_over_bathula_mindist_2_16/
+% simulate the gains of RS and RC ranking with 0% noise tolerance MILP over
+% the Bathula benchmark. Min-Distance routing is used, which has 16 RSs.
+% There are totally 70 traffic matrices in the two folders, each with 50
+% random shuffles. 
