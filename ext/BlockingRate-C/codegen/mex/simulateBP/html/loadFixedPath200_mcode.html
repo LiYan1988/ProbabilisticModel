@@ -1,0 +1,91 @@
+<!-- saved from url=(0014)about:internet -->
+<div class="dead">
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="48,1" id="srcline1"> 1</a></span><span class="line">function [SetOfDemandsOnLink, demandPaths, demandPathLinks, ...</span></span>
+<span class="srcline"><span class="lineno"><a href="48,2" id="srcline2"> 2</a></span><span class="line">    SetOfDemandsOnNode] = createTrafficDemands(TopologyStruct, Ndemands)</span></span>
+<span class="srcline"><span class="lineno"><a href="48,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">% create traffic demands for a network</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,4" id="srcline4"> 4</a></span><span class="line"><span class="comment">% a2aFlag, true: generate all-to-all traffic, false: generate half traffic</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,5" id="srcline5"> 5</a></span><span class="line"><span class="comment">% fixRouting, 0: dijstra shortest path, 1: min regen, 2: min distance,</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,6" id="srcline6"> 6</a></span><span class="line"><span class="comment">%             3: min cost, 4: min distance min cost</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,7" id="srcline7"> 7</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,8" id="srcline8"> 8</a></span><span class="line">NodeList = TopologyStruct.NodeList;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,9" id="srcline9"> 9</a></span><span class="line">NNodes = TopologyStruct.NNodes;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,10" id="srcline10">10</a></span><span class="line">NetworkCost = TopologyStruct.NetworkCost;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,11" id="srcline11">11</a></span><span class="line">NetworkConnectivity = TopologyStruct.NetworkConnectivity;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,12" id="srcline12">12</a></span><span class="line">LinkList = TopologyStruct.LinkList;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,13" id="srcline13">13</a></span><span class="line">NLinks = TopologyStruct.NLinks;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,14" id="srcline14">14</a></span><span class="line">LinkListIDs = TopologyStruct.LinkListIDs;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,15" id="srcline15">15</a></span><span class="line">LinkLengths = TopologyStruct.LinkLengths;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,16" id="srcline16">16</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,17" id="srcline17">17</a></span><span class="line">NodePairs = zeros(NNodes*(NNodes-1)/2, 2);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,18" id="srcline18">18</a></span><span class="line">n = 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,19" id="srcline19">19</a></span><span class="line">for i = 1:NNodes-1</span></span>
+<span class="srcline"><span class="lineno"><a href="48,20" id="srcline20">20</a></span><span class="line">    for j = i+1:NNodes</span></span>
+<span class="srcline"><span class="lineno"><a href="48,21" id="srcline21">21</a></span><span class="line">        NodePairs(n, :) = [i, j];</span></span>
+<span class="srcline"><span class="lineno"><a href="48,22" id="srcline22">22</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,23" id="srcline23">23</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,24" id="srcline24">24</a></span><span class="line">NodePairs = sortrows(NodePairs);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,25" id="srcline25">25</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,26" id="srcline26">26</a></span><span class="line">demandSourceDestinationPairs = NodePairs;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,27" id="srcline27">27</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,28" id="srcline28">28</a></span><span class="line">demandDataRate = randi([10, 100], [Ndemands, 1]);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,29" id="srcline29">29</a></span><span class="line">demands = [demandSourceDestinationPairs, demandDataRate];</span></span>
+<span class="srcline"><span class="lineno"><a href="48,30" id="srcline30">30</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,31" id="srcline31">31</a></span><span class="line"><span class="comment">%%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,32" id="srcline32">32</a></span><span class="line">demandsMatrix = zeros(Ndemands, NLinks+3);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,33" id="srcline33">33</a></span><span class="line">demandsMatrix(:, 1:3) = demands;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,34" id="srcline34">34</a></span><span class="line">demandPaths = cell(Ndemands, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,35" id="srcline35">35</a></span><span class="line">demandPathLinks = cell(Ndemands, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,36" id="srcline36">36</a></span><span class="line">demandPathLength = zeros(Ndemands, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,37" id="srcline37">37</a></span><span class="line">for n=1:Ndemands</span></span>
+<span class="srcline"><span class="lineno"><a href="48,38" id="srcline38">38</a></span><span class="line">    <span class="comment">%     [shortestPath, pathLength] = dijkstra(NetworkCost, demands(n, 1), demands(n, 2));</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,39" id="srcline39">39</a></span><span class="line">    [shortestPath, pathLength] = loadFixedPath(demands(n, 1), ...</span></span>
+<span class="srcline"><span class="lineno"><a href="48,40" id="srcline40">40</a></span><span class="line">        demands(n, 2), NetworkCost);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,41" id="srcline41">41</a></span><span class="line">    demandPaths{n} = shortestPath;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,42" id="srcline42">42</a></span><span class="line">    demandPathLength(n) = pathLength;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,43" id="srcline43">43</a></span><span class="line">    pathLinks = [shortestPath(1:end-1)', shortestPath(2:end)'];</span></span>
+<span class="srcline"><span class="lineno"><a href="48,44" id="srcline44">44</a></span><span class="line">    for m=1:NLinks</span></span>
+<span class="srcline"><span class="lineno"><a href="48,45" id="srcline45">45</a></span><span class="line">        if ismember(LinkList(m,:), pathLinks, 'rows')</span></span>
+<span class="srcline"><span class="lineno"><a href="48,46" id="srcline46">46</a></span><span class="line">            demandsMatrix(n, m+3) = 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,47" id="srcline47">47</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,48" id="srcline48">48</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,49" id="srcline49">49</a></span><span class="line">    demandPathLinks{n} = find(demandsMatrix(n, 4:end));</span></span>
+<span class="srcline"><span class="lineno"><a href="48,50" id="srcline50">50</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,51" id="srcline51">51</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,52" id="srcline52">52</a></span><span class="line">SetOfDemandsOnLink = cell(NLinks, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,53" id="srcline53">53</a></span><span class="line">for m=1:NLinks</span></span>
+<span class="srcline"><span class="lineno"><a href="48,54" id="srcline54">54</a></span><span class="line">    SetOfDemandsOnLink{m} = find(demandsMatrix(:, m+3));</span></span>
+<span class="srcline"><span class="lineno"><a href="48,55" id="srcline55">55</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,56" id="srcline56">56</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,57" id="srcline57">57</a></span><span class="line">SetOfDemandsOnNode = cell(NNodes, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,58" id="srcline58">58</a></span><span class="line">for m=1:NNodes</span></span>
+<span class="srcline"><span class="lineno"><a href="48,59" id="srcline59">59</a></span><span class="line">    SetOfDemandsOnNode{m} = zeros(10, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,60" id="srcline60">60</a></span><span class="line">    k = 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,61" id="srcline61">61</a></span><span class="line">    for i=1:Ndemands</span></span>
+<span class="srcline"><span class="lineno"><a href="48,62" id="srcline62">62</a></span><span class="line">        if ismember(m, demandPaths{i})</span></span>
+<span class="srcline"><span class="lineno"><a href="48,63" id="srcline63">63</a></span><span class="line">            if k&gt;length(SetOfDemandsOnNode{m})</span></span>
+<span class="srcline"><span class="lineno"><a href="48,64" id="srcline64">64</a></span><span class="line">                tmp = SetOfDemandsOnNode{m};</span></span>
+<span class="srcline"><span class="lineno"><a href="48,65" id="srcline65">65</a></span><span class="line">                tmp = [tmp; zeros(10, 1)];</span></span>
+<span class="srcline"><span class="lineno"><a href="48,66" id="srcline66">66</a></span><span class="line">                SetOfDemandsOnNode{m} = tmp;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,67" id="srcline67">67</a></span><span class="line">            end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,68" id="srcline68">68</a></span><span class="line">            SetOfDemandsOnNode{m}(k) = i;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,69" id="srcline69">69</a></span><span class="line">            k = k+1;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,70" id="srcline70">70</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,71" id="srcline71">71</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,72" id="srcline72">72</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="48,73" id="srcline73">73</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,74" id="srcline74">74</a></span><span class="line">end</span></span>
+</pre>
+</div>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="48,75" id="srcline75">75</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,76" id="srcline76">76</a></span><span class="line"><span class="keyword">function</span> [<span class="var type1" id="S41T20U380">path</span>, <span class="var type1" id="S42T1U381">cost</span>] = loadFixedPath(<span class="var type1" id="S43T1U384">s</span>, <span class="var type1" id="S44T1U385">t</span>, <span class="var type1" id="S45T12U386">networkCostMatrix</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="48,77" id="srcline77">77</a></span><span class="line"><span class="keyword">if</span> <span class="mxinfo " id="T28:U6"><span class="var type1" id="S44T1U390">t</span>&lt;<span class="var type1" id="S43T1U391">s</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,78" id="srcline78">78</a></span><span class="line">    <span class="mxinfo " id="T1:U9"><span class="var type1" id="S46T1U394">x</span>=<span class="var type1" id="S43T1U395">s</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,79" id="srcline79">79</a></span><span class="line">    <span class="mxinfo " id="T1:U12"><span class="var type1" id="S43T1U398">s</span>=<span class="var type1" id="S44T1U399">t</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,80" id="srcline80">80</a></span><span class="line">    <span class="mxinfo " id="T1:U15"><span class="var type1" id="S44T1U402">t</span>=<span class="var type1" id="S46T1U403">x</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="48,81" id="srcline81">81</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="48,82" id="srcline82">82</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="48,83" id="srcline83">83</a></span><span class="line">[<span class="var type1" id="S41T20U407">path</span>, <span class="var type1" id="S42T1U408">cost</span>] = <span class="fcn" id="F201N5:B410">dijkstra</span>(<span class="var type1" id="S45T12U411">networkCostMatrix</span>, <span class="var type1" id="S43T1U412">s</span>, <span class="var type1" id="S44T1U413">t</span>);</span></span>
+<span class="srcline"><span class="lineno"><a href="48,84" id="srcline84">84</a></span><span class="line"><span class="keyword">end</span></span></span>
+</pre>

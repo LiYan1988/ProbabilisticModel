@@ -7,6 +7,7 @@ function [ DemandStruct ] = modifyDemandStruct(DemandStruct)
 % Generate new traffic demands
 Ndemands = size(DemandStruct.demandsMatrix, 1);
 
+demandDataRate = zeros(Ndemands, 1);
 if strcmp(DemandStruct.distribution, 'uniform')
     demandDataRate = randi([DemandStruct.distributionParameter1, ...
         DemandStruct.distributionParameter2], ...
@@ -18,4 +19,4 @@ elseif strcmp(DemandStruct.distribution, 'normal')
         [Ndemands, 1]));
 end
 DemandStruct.demandsMatrix(:, 3) = demandDataRate;
-DemandStruct.demandsTable.DataRate = demandDataRate;
+% DemandStruct.demandsTable.DataRate = demandDataRate;

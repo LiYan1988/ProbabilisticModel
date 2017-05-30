@@ -12,6 +12,7 @@ Ndemands = size(demandsMatrix, 1);
 blockStatistics = zeros(Ndemands, NMonteCarlo);
 blockHistory = zeros(Ndemands, NMonteCarlo);
 for i=1:NMonteCarlo
+    i = int32(i);
     demandsOrder = randperm(Ndemands);
     fprintf('Simulation %d starts\n', i)
     [blockStatistics(:, i), blockHistory(:, i)] = ...

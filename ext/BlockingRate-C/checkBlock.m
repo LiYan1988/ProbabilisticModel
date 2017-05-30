@@ -12,7 +12,8 @@ gamma = systemParameters.gamma;
 Nase = systemParameters.Nase;
 gb = systemParameters.gb;
 psd = systemParameters.psd;
-NoiseMax = systemParameters.psd/systemParameters.snrThresholds.(systemParameters.modulationFormat);
+modulationFormat = systemParameters.modulationFormat;
+NoiseMax = systemParameters.psd/systemParameters.snrThresholds.(modulationFormat);
 
 LinkLengths = TopologyStruct.LinkLengths;
 RS = TopologyStruct.RegenSites;

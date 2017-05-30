@@ -14,6 +14,8 @@ function [shortestPath, totalCost] = dijkstra(netCostMatrix, s, d)
 % Modifications (simplifications) by Meral Shirazipour 9 Dec 2009
 %==============================================================
 n = size(netCostMatrix,1);
+farthestPrevHop = zeros(n, 1);
+farthestNextHop = zeros(n, 1);
 for i = 1:n
     % initialize the farthest node to be itself;
     farthestPrevHop(i) = i; % used to compute the RTS/CTS range;
@@ -21,9 +23,12 @@ for i = 1:n
 end
 
 % all the nodes are un-visited;
+visited = zeros(n, 1);
 visited(1:n) = false;
 
+distance = zeros(n, 1)
 distance(1:n) = inf;    % it stores the shortest distance between each node and the source node;
+parent = zeros(n, 1);
 parent(1:n) = 0;
 
 distance(s) = 0;
