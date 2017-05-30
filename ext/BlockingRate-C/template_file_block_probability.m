@@ -57,10 +57,6 @@ NLinks = size(LinkList, 1);
 LinkListIDs = (1:NLinks)';
 LinkLengths = s;
 
-LinksTable = table(LinkListIDs, LinkList(:, 1), LinkList(:, 2), ...
-    LinkLengths, 'variablenames', {'LinkID', 'Source', 'Destination', ...
-    'LinkLength'});
-
 TopologyStruct = struct();
 TopologyStruct.NodeList = NodeList;
 TopologyStruct.NNodes = NNodes;
@@ -70,7 +66,6 @@ TopologyStruct.LinkList = LinkList;
 TopologyStruct.NLinks = NLinks;
 TopologyStruct.LinkListIDs = LinkListIDs;
 TopologyStruct.LinkLengths = LinkLengths;
-TopologyStruct.LinksTable = LinksTable;
 
 %% generate traffic demands
 %####################################################################
@@ -108,8 +103,7 @@ SimulationParameters.Sbins = Sbins;
 
 %% Monte Carlo
 x = load('templateDemandStruct.mat');
-DemandStructTemplate = getfield(x, ...
-    sprintf('DemandStruct%s', RoutingScheme));
+DemandStructTemplate = x.(sprintf('DemandStruct%s', RoutingScheme));
 clear x;
 DemandStructTemplate.distributionParameter1 = p1;
 DemandStructTemplate.distributionParameter2 = p2;
@@ -141,8 +135,18 @@ elseif strcmp(alg, 'benchmark_Predo_routingReach') % routing only, Predo's
     TopologyStruct.RegenSites = RS(1:nRS);
 end
 
+SetOfDemandsOnLink = DemandStructTemplate.SetOfDemandsOnLink;
+demandPaths = DemandStructTemplate.demandPaths;
+demandPathLinks = DemandStructTemplate.demandPathLinks;
+SetOfDemandsOnNode = DemandStructTemplate.SetOfDemandsOnNode;
+DemandStructTemplate.SetOfDemandsOnLink = [];
+DemandStructTemplate.demandPaths = [];
+DemandStructTemplate.demandPathLinks = [];
+DemandStructTemplate.SetOfDemandsOnNode = [];
+
 [blockStatistics, blockHistory] = ...
     simulateBlockProb(systemParameters, TopologyStruct, ...
-    SimulationParameters, DemandStructTemplate);
+    SimulationParameters, DemandStructTemplate, ...
+    SetOfDemandsOnLink, SetOfDemandsOnNode, demandPaths, demandPathLinks);
 
 save(sprintf('BP_%s_%d.mat', simulationName, simuID));

@@ -1,6 +1,8 @@
 function [blockFlag, demandsNoisePerLinkAll, demandsFrequency] = ...
     checkBlock(idx, slotStart, demandsFrequency, ...
-    demandsNoisePerLinkAll, systemParameters, TopologyStruct, DemandStruct)
+    demandsNoisePerLinkAll, systemParameters, TopologyStruct, ...
+    DemandStruct, SetOfDemandsOnLink, SetOfDemandsOnNode, ...
+    demandPaths, demandPathLinks)
 % Check if the new demand causes higher than threshold noie to existing
 % demands or itself.
 
@@ -15,10 +17,8 @@ NoiseMax = systemParameters.psd/systemParameters.snrThresholds.(systemParameters
 LinkLengths = TopologyStruct.LinkLengths;
 RS = TopologyStruct.RegenSites;
 
-SetOfDemandsOnLink = DemandStruct.SetOfDemandsOnLink;
 demandsMatrix = DemandStruct.demandsMatrix;
-demandPathNodes = DemandStruct.demandPaths;
-demandPathLinks = DemandStruct.demandPathLinks;
+demandPathNodes = demandPaths;
 
 % pretend the new demand is allocated
 demandsFrequencyTmp = demandsFrequency;
@@ -30,7 +30,7 @@ demandsNoisePerLinkAllTmp = demandsNoisePerLinkAll;
 
 % calculate the noise on each link used by the new demand
 demandsInvoled = []; % the demands need to check
-linksUsed = DemandStruct.demandPathLinks{idx};
+linksUsed = demandPathLinks{idx};
 for i=1:length(linksUsed)
     demandsOnLink = SetOfDemandsOnLink{linksUsed(i)};
     if isempty(demandsOnLink)
