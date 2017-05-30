@@ -49,8 +49,8 @@ def change_file(file_path, replace_lines):
     os.rename(abs_path, file_path)
 
 # simulation parameters
-simulation_name = 'mc2p_2' 
-partition = 'economy'
+simulation_name = 'mc2p_1' 
+partition = 'serial' # or economy
 group = 'maite_group' 
 benchmark_name = 'RS2'
 
@@ -61,7 +61,7 @@ slurm_file_template = simulation_name+'_{}.slurm'
 # sbatch parameters
 ntasks_per_node = 1
 cpus_per_task = 4
-mem_per_cpu = 4000
+mem_per_cpu = 6350 # M, economy is 4000, serial is 6350
 time_days = 2
 time_hours = 0
 time_minutes = 0
@@ -84,12 +84,12 @@ array_id = np.arange(1, 51, 1)
 for batch_id in array_id:
     # write python files
     python_src = "template_python.py"
-    line11 = "os.chdir('/scratch/ly6j/backup/probabilisticModel/{}')\n".format(simulation_name)
+#    line11 = "os.chdir('/scratch/ly6j/backup/probabilisticModel/{}')\n".format(simulation_name)
     line13 = "kwargs = {}\n".format(kwargs.__repr__())
-    m = sio.loadmat('../ResultsBH.mat')
-    line14 = "Ii_hint = {}\n".format(list(m[benchmark_name][0]).__repr__())
+    m = sio.loadmat('../RS_MILP_TR2000.mat')
+    line14 = "Ii_hint = {}\n".format(list(m['RS_min_dist'][0]-1).__repr__()) # note the index in python starts from 0
     line15 = "array_id = {}\n".format(batch_id)
-    replace_lines = {11:line11, 15:line15, 13:line13, 14:line14}
+    replace_lines = {15:line15, 13:line13, 14:line14}
     python_dst = python_file_template.format(batch_id)
     copy_template(python_src, python_dst, replace_lines)
 
@@ -110,8 +110,8 @@ for batch_id in array_id:
     slurm_dst = slurm_file_template.format(batch_id)
     copy_template(slurm_src, slurm_dst, replace_lines)
 
-#for file in os.listdir(os.curdir):
-#    change_eol_win2unix(file)
+for file in os.listdir(os.curdir):
+    change_eol_win2unix(file)
 
 os.remove('template_python.py')
 os.remove('template_slurm_python.slurm')
