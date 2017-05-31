@@ -137,7 +137,7 @@ elseif strcmp(alg, 'benchmark_Predo_routingOnly') % routing only, Predo's
     TopologyStruct.RegenSites = RS(1:nRS);
 elseif strcmp(alg, 'benchmark_Predo_routingReach') % routing only, Predo's 
     x = load('PredoRoutingReach.mat');
-    RS = x.NodeProbROSortedIdx;
+    RS = x.NodeProbRRSortedIdx;
     TopologyStruct.RegenSites = RS(1:nRS);
 end
 

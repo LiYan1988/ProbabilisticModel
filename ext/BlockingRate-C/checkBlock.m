@@ -13,7 +13,17 @@ Nase = systemParameters.Nase;
 gb = systemParameters.gb;
 psd = systemParameters.psd;
 modulationFormat = systemParameters.modulationFormat;
-NoiseMax = systemParameters.psd/systemParameters.snrThresholds.(modulationFormat);
+if strcmp(modulationFormat, 'PM_QPSK')
+    NoiseMax = systemParameters.psd/systemParameters.snrThresholds.('PM_QPSK');
+elseif strcmp(modulationFormat, 'PM_8QAM')
+    NoiseMax = systemParameters.psd/systemParameters.snrThresholds.('PM_8QAM');
+elseif strcmp(modulationFormat, 'PM_16QAM')
+    NoiseMax = systemParameters.psd/systemParameters.snrThresholds.('PM_16QAM');
+elseif strcmp(modulationFormat, 'PM_32QAM')
+    NoiseMax = systemParameters.psd/systemParameters.snrThresholds.('PM_32QAM');
+else
+    NoiseMax = systemParameters.psd/systemParameters.snrThresholds.('PM_64QAM');
+end
 
 LinkLengths = TopologyStruct.LinkLengths;
 RS = TopologyStruct.RegenSites;
@@ -23,17 +33,18 @@ demandPathNodes = demandPaths;
 
 % pretend the new demand is allocated
 demandsFrequencyTmp = demandsFrequency;
-demandsFrequencyTmp(idx, 1) = slotStart-1+demandsMatrix(idx, 3)/2;
-demandsFrequencyTmp(idx, 2) = slotStart-1;
-demandsFrequencyTmp(idx, 3) = slotStart-1+demandsMatrix(idx, 3);
+demandsFrequencyTmp(idx, 1) = slotStart(1)-1+demandsMatrix(idx, 3)/2;
+demandsFrequencyTmp(idx, 2) = slotStart(1)-1;
+demandsFrequencyTmp(idx, 3) = slotStart(1)-1+demandsMatrix(idx, 3);
 
 demandsNoisePerLinkAllTmp = demandsNoisePerLinkAll;
 
 % calculate the noise on each link used by the new demand
-demandsInvoled = []; % the demands need to check
-linksUsed = demandPathLinks{idx};
+demandsInvoled = zeros(1, size(demandsMatrix, 1)); % the demands need to check
+nz = 0;
+linksUsed = demandPathLinks(idx, 1:demandPathLinks(idx, end));
 for i=1:length(linksUsed)
-    demandsOnLink = SetOfDemandsOnLink{linksUsed(i)};
+    demandsOnLink = SetOfDemandsOnLink(linksUsed(i), 1:SetOfDemandsOnLink(linksUsed(i), end));
     if isempty(demandsOnLink)
         continue;
     end
@@ -47,7 +58,23 @@ for i=1:length(linksUsed)
     if isempty(demandsOnLink)
         continue;
     end
-    demandsInvoled = union(demandsInvoled, demandsOnLink);
+    % demandsInvoled = union(demandsInvoled, demandsOnLink, 'rows');
+    tmp = demandsOnLink;
+    for n = 1:nz
+        flag = 0;
+        for m = 1:length(demandsOnLink)
+            if demandsInvoled(n)==demandsOnLink(m)
+                flag = 1;
+                break;
+            end
+        end
+        if flag==0
+            tmp0 = [tmp, demandsInvoled(n)];
+            tmp = tmp0;
+        end
+    end
+    demandsInvoled(1:length(tmp)) = tmp;
+    nz = length(tmp);
     
     demandsCenterFrequency = demandsFrequencyTmp(demandsOnLink, 1);
     demandsBandwidth = demandsMatrix(demandsOnLink, 3);
@@ -60,9 +87,9 @@ end
 
 % check if any demand is worse than nosie threshold
 blockFlag = false;
-for d=1:length(demandsInvoled)
-    linkTmp = demandPathLinks{demandsInvoled(d)};
-    nodeTmp = demandPathNodes{demandsInvoled(d)};
+for d=1:nz
+    linkTmp = demandPathLinks(demandsInvoled(d), 1:demandPathLinks(demandsInvoled(d), end));
+    nodeTmp = demandPathNodes(demandsInvoled(d), 1:demandPathNodes(demandsInvoled(d), end));
     noiseTmp = 0; % accumulated noie
     for l=1:length(linkTmp)
         noiseTmp = noiseTmp+demandsNoisePerLinkAllTmp(demandsInvoled(d), linkTmp(l));

@@ -37,6 +37,7 @@ for i=1:Ndemands
     run_end = find(temp2==-1);
     run_interval = run_end-run_start;
     run_idx = find(run_interval>=demandsMatrix(idx, 3)+gb, 1, 'first');
+    run_idx = run_idx(1);
     % continue if there is no new demand
     if isempty(run_idx)
         % block demand i

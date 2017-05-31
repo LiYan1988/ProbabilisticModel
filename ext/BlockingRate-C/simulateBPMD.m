@@ -1,5 +1,5 @@
-function [blockStatistics, blockHistory] = simulateBP(randomSeed, ...
-    simuID, modulationFormat, RoutingScheme, alg, nRS, simulationName)
+function [blockStatistics, blockHistory] = simulateBPMD(randomSeed, ...
+    simuIDstr, modulationFormat, alg, nRS, simulationName, NMonteCarlo)
 %% Template file for the journal paper BP simulation on Rivanna
 % warning off;
 % addpath(genpath('/scratch/ly6j/YALMIP'));
@@ -78,7 +78,7 @@ p1 = 150;
 p2 = 20;
 ndprob=0.8;
 ndmax=3;
-NMonteCarlo = 1;
+% NMonteCarlo = 1;
 Repeat = 1;
 Nbins = 65;
 Mbins = 50;
@@ -131,17 +131,18 @@ elseif strcmp(alg, 'benchmark_Predo_routingOnly') % routing only, Predo's
     x = load('PredoRoutingOnly.mat');
     RS = x.NodeProbROSortedIdx;
     TopologyStruct.RegenSites = RS(1:nRS);
-elseif strcmp(alg, 'benchmark_Predo_routingReach') % routing only, Predo's 
+% elseif strcmp(alg, 'benchmark_Predo_routingReach') % routing only, Predo's 
+else
     x = load('PredoRoutingReach.mat');
-    RS = x.NodeProbROSortedIdx;
+    RS = x.NodeProbRRSortedIdx;
     TopologyStruct.RegenSites = RS(1:nRS);
 end
-SetOfDemandsOnLink = cell(198, 1);
-demandPaths = cell(5550, 1);
-demandPathLinks = cell(5550, 1);
-SetOfDemandsOnNode = cell(75, 1);
-[SetOfDemandsOnLink, demandPaths, demandPathLinks, ...
-    SetOfDemandsOnNode] = createTrafficDemands(TopologyStruct, Ndemands);
+
+cellMatrices = load('CellMatricesMD.mat');
+SetOfDemandsOnLink = cellMatrices.SetOfDemandsOnLinkMatrix;
+SetOfDemandsOnNode = cellMatrices.SetOfDemandsOnNodeMatrix;
+demandPathLinks = cellMatrices.demandPathLinksMatrix;
+demandPaths = cellMatrices.demandPathsMatrix;
 
 blockHistory = zeros(Ndemands, NMonteCarlo);
 blockStatistics = zeros(Ndemands, NMonteCarlo);
@@ -150,4 +151,26 @@ blockStatistics = zeros(Ndemands, NMonteCarlo);
     SimulationParameters, DemandStructTemplate, ...
     SetOfDemandsOnLink, SetOfDemandsOnNode, demandPaths, demandPathLinks);
 
-% save(sprintf('BP_%s_%d.mat', simulationName, simuID));
+fileName = [simulationName, '_', alg, '_MD_blockHistory_', simuIDstr, '.csv'];
+% fileName = sprintfc('%s_%s_MD_blockHistory_%d.csv', simulationName, alg, int32(simuID));
+fid = fopen(fileName, 'w');
+for d = 1:Ndemands
+    for n = 1:NMonteCarlo
+        fprintf(fid, '%.8e,', blockHistory(d, n));
+    end
+    fprintf(fid, '\n');
+end
+fclose(fid);
+
+% function s = thePainfulInt2Str( n )
+% s = '';
+% is_pos = n > 0; % //save sign
+% n = abs(n); %// work with positive
+% while n > 0
+%     c = mod( n, 10 ); % get current character
+%     s = [uint8(c+'0'),s]; %// add the character
+%     n = ( n -  c ) / 10; %// "chop" it off and continue
+% end
+% if ~is_pos
+%     s = ['-',s]; %// add the sign
+% end

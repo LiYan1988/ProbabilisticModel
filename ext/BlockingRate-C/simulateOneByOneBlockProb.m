@@ -12,13 +12,13 @@ Ndemands = size(demandsMatrix, 1);
 blockStatistics = zeros(Ndemands, NMonteCarlo);
 blockHistory = zeros(Ndemands, NMonteCarlo);
 for i=1:NMonteCarlo
-    i = int32(i);
+    tmpi = int32(i);
     demandsOrder = randperm(Ndemands);
-    fprintf('Simulation %d starts\n', i)
+    fprintf('Simulation %d starts\n', tmpi)
     [blockStatistics(:, i), blockHistory(:, i)] = ...
         allocateOneByOneBP(systemParameters, TopologyStruct, ...
         DemandStruct, demandsOrder, ...
         SetOfDemandsOnLink, SetOfDemandsOnNode, ...
         demandPaths, demandPathLinks);
-    fprintf('Simulation %d is done.\n', i)
+    fprintf('Simulation %d is done.\n', tmpi)
 end

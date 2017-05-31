@@ -160,7 +160,7 @@
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.RanPilSilVerification>false</param.RanPilSilVerification>
       <param.VerificationMode>option.VerificationMode.None</param.VerificationMode>
-      <param.VerificationStatus>option.VerificationStatus.Inactive</param.VerificationStatus>
+      <param.VerificationStatus />
       <param.CustomSourceCode />
       <param.CustomHeaderCode />
       <param.CustomInitializer />
@@ -728,7 +728,7 @@
     <param.DefaultImportExportVariable>config</param.DefaultImportExportVariable>
     <param.RowMajor>false</param.RowMajor>
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}\codegen\lib\simulateBP\simulateBP.lib</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\codegen\lib\simulateBPMD\simulateBPMD.lib</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>false</param.HasECoderFeatures>
     <param.mex.mainhtml />
@@ -751,18 +751,18 @@
     <var.gc.lastOutputRoot />
     <var.gc.lastOutputType />
     <var.gc.preBuildChecksum />
-    <var.cfi.lastOutputRoot>codegen\mex\simulateBP</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>4181832921</var.cfi.preBuildChecksum>
+    <var.cfi.lastOutputRoot>codegen\mex\simulateBPMD</var.cfi.lastOutputRoot>
+    <var.cfi.preBuildChecksum>1562638269</var.cfi.preBuildChecksum>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
     <var.lastUserSourceChecksum />
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\createTrafficDemands.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\dijkstra.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\simulateBP.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
-    <param.forceMexBuild>false</param.forceMexBuild>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\allocateOneByOneBP.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\calculateNoise.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\checkBlock.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\modifyDemandStruct.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\simulateBlockProb.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\simulateBPMD.m&lt;/file&gt;&lt;file&gt;C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\simulateOneByOneBlockProb.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <param.forceMexBuild>true</param.forceMexBuild>
     <param.configImportActive>false</param.configImportActive>
     <var.boundToGui>true</var.boundToGui>
-    <param.mex.outputfile>simulateBP_mex</param.mex.outputfile>
-    <param.grt.outputfile>simulateBP</param.grt.outputfile>
+    <param.mex.outputfile>simulateBPMD_mex</param.mex.outputfile>
+    <param.grt.outputfile>simulateBPMD</param.grt.outputfile>
     <param.artifact>option.target.artifact.lib</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}\codegen\lib\simulateBP\simulateBP.lib</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\codegen\lib\simulateBPMD\simulateBPMD.lib</param.outputfile>
     <param.EnableAutoExtrinsicCalls>true</param.EnableAutoExtrinsicCalls>
     <param.UsePreconditions>false</param.UsePreconditions>
     <param.FeatureFlags />
@@ -837,7 +837,6 @@
       <var.gc.preBuildChecksum />
       <var.outdatedOnRestore />
       <var.lastUserSourceChecksum />
-      <param.forceMexBuild />
       <param.configImportActive />
       <param.mex.outputfile />
       <param.grt.outputfile />
@@ -887,23 +886,23 @@
       <param.FixedPointUseDesignRanges />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\simulateBP.m">
-        <Marker>1496174273768</Marker>
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\simulateBPMD.m">
+        <Marker>1496234108299</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>
       <file>${PROJECT_ROOT}\testbench.m</file>
     </fileset.testbench>
     <fileset.inputtypes>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\simulateBP.m">
-        <Inputs fileName="simulateBP.m" functionName="simulateBP">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\simulateBPMD.m">
+        <Inputs fileName="simulateBPMD.m" functionName="simulateBPMD">
           <Input Name="randomSeed" typeId="0" />
-          <Input Name="simuID" typeId="0" />
+          <Input Name="simuIDstr" typeId="0" />
           <Input Name="modulationFormat" typeId="1" />
-          <Input Name="RoutingScheme" typeId="2" />
-          <Input Name="alg" typeId="3" />
+          <Input Name="alg" typeId="1" />
           <Input Name="nRS" typeId="0" />
-          <Input Name="simulationName" typeId="4" />
+          <Input Name="simulationName" typeId="1" />
+          <Input Name="NMonteCarlo" typeId="0" />
           <idpTable>
             <type typeId="0">
               <Class>double</Class>
@@ -915,38 +914,17 @@
             </type>
             <type typeId="1">
               <Class>char</Class>
-              <Size>1 x 7</Size>
+              <Size>1 x :inf</Size>
               <Value />
               <InitialValue />
-              <UserDefined>false</UserDefined>
-            </type>
-            <type typeId="2">
-              <Class>char</Class>
-              <Size>1 x 2</Size>
-              <Value />
-              <InitialValue />
-              <UserDefined>false</UserDefined>
-            </type>
-            <type typeId="3">
-              <Class>char</Class>
-              <Size>1 x 27</Size>
-              <Value />
-              <InitialValue />
-              <UserDefined>false</UserDefined>
-            </type>
-            <type typeId="4">
-              <Class>char</Class>
-              <Size>1 x 9</Size>
-              <Value />
-              <InitialValue />
-              <UserDefined>false</UserDefined>
+              <UserDefined>true</UserDefined>
             </type>
           </idpTable>
         </Inputs>
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\codegen\lib\simulateBP" name="simulateBP.lib" optional="false">C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\codegen\lib\simulateBP\simulateBP.lib</file>
+      <file location="${PROJECT_ROOT}\codegen\lib\simulateBPMD" name="simulateBPMD.lib" optional="false">C:\Users\liyan\Desktop\buffer\researches\ProbabilisticModel\ext\BlockingRate-C\codegen\lib\simulateBPMD\simulateBPMD.lib</file>
     </build-deliverables>
     <workflow />
     <matlab>
