@@ -1,0 +1,6 @@
+fcn_initialize.obj
+fcn_terminate.obj
+fcn.obj
+rt_nonfinite.obj
+rtGetNaN.obj
+rtGetInf.obj

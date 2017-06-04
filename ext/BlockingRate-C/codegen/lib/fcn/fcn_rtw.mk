@@ -2,7 +2,7 @@
 ## Makefile generated for MATLAB file/project 'fcn'. 
 ## 
 ## Makefile     : fcn_rtw.mk
-## Generated on : Thu Jun 01 13:51:38 2017
+## Generated on : Fri Jun 02 14:24:24 2017
 ## MATLAB Coder version: 3.3 (R2017a)
 ## 
 ## Build Info:

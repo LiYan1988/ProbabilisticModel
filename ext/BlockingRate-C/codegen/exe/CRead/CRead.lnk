@@ -1,0 +1,13 @@
+CRead_initialize.obj
+CRead_terminate.obj
+CRead.obj
+CWrite.obj
+fopen.obj
+fileManager.obj
+fread.obj
+fclose.obj
+CRead_emxutil.obj
+CRead_emxAPI.obj
+rt_nonfinite.obj
+rtGetNaN.obj
+rtGetInf.obj
