@@ -79,24 +79,37 @@ int main()
     Matrix_int demands_per_pair(n_nodes, Row_int(n_nodes, 1));
     Matrix_double bandwidth_mean(n_nodes, Row_double(n_nodes, 150));
     Matrix_double bandwidth_std(n_nodes, Row_double(n_nodes, 20));
-    Row_nodepair demands = generate_demands(demands_per_pair,
-        bandwidth_mean, bandwidth_std);
+//    Row_nodepair demands = generate_demands(demands_per_pair,
+//        bandwidth_mean, bandwidth_std);
+    tuple<Row_nodepair, Row_double, Matrix_int, Matrix_int, Matrix_int>
+        x = generate_demands(demands_per_pair, bandwidth_mean, bandwidth_std);
+    simulate_blocking(x);
 
-    // Calculate shortest paths and lengths for all pairs
-    Matrix_path apsp = all_pair_shortest_path();
-    Matrix_int apsp_paths;
-    Matrix_double apsp_length;
-    for(int i = 0; i < n_nodes; ++i){
-        Row_double tmp;
-        for(int j = 0; j < n_nodes; ++j){
-            tmp.push_back(get<2>(apsp[i][j]));
-            if (i == j) continue;
-            apsp_paths.push_back(get<3>(apsp[i][j]));
-        }
-        apsp_length.push_back(tmp);
-    }
-    write_csv("APSP_path.csv", apsp_paths);
-    write_csv("APSP_length.csv", apsp_length);
+//    Row_nodepair demands;
+//    Row_double demand_path_length;
+//    Matrix_int demand_path_node, demand_path_link, demand_on_link;
+//    tie(demands, demand_path_length, demand_path_node,
+//        demand_path_link, demand_on_link) = x;
+//    write_csv("test2.csv", demand_path_node);
+//    write_csv("test3.csv", demand_path_link);
+//    write_csv("test4.csv", demand_on_link);
+
+
+//    // Calculate shortest paths and lengths for all pairs
+//    Matrix_path apsp = all_pair_shortest_path();
+//    Matrix_int apsp_paths;
+//    Matrix_double apsp_length;
+//    for(int i = 0; i < n_nodes; ++i){
+//        Row_double tmp;
+//        for(int j = 0; j < n_nodes; ++j){
+//            tmp.push_back(get<2>(apsp[i][j]));
+//            if (i == j) continue;
+//            apsp_paths.push_back(get<3>(apsp[i][j]));
+//        }
+//        apsp_length.push_back(tmp);
+//    }
+//    write_csv("APSP_path.csv", apsp_paths);
+//    write_csv("APSP_length.csv", apsp_length);
 
     // Calculate the set of nodes and links used by each demand
 //    Matrix_int demand_node;

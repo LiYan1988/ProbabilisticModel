@@ -65,8 +65,8 @@ for i=1:Ndemands
     else
         % else block it
         blockStatistics(idx) = 1;
-        blockHistory(i:end) = sum(blockStatistics)/Ndemands;
-%         fprintf('Demand %d is blocked due to SNR, block probability %.4e, %d allocated.\n', idx, sum(blockStatistics)/Ndemands, i);
+        blockHistory(i:end) = sum(blockStatistics)/i;
+        fprintf('Demand %d is blocked due to SNR, block probability %.4e, %d allocated.\n', idx, sum(blockStatistics)/Ndemands, i);
     end
 end
 

@@ -79,8 +79,11 @@ typedef vector<Row_link> Matrix_link;
 typedef tuple<int, int, double, Row_int> Path;
 typedef vector<Path> Row_path;
 typedef vector<Row_path> Matrix_path;
-typedef vector<bool> Row_bool;
-
+typedef vector<signed char> Row_sc; // for +1, 0, and -1
+typedef vector<Row_sc> Matrix_sc;
+typedef tuple<Row_nodepair, Row_double,
+    Matrix_int, Matrix_int, Matrix_int> Demand;
+typedef vector<long int> Row_longint;
 
 // The unit of frequency is GHz
 const double PSD(15); //muW/GHz ~ 10e-15 W/Hz
@@ -91,9 +94,10 @@ const double NASE(3.583118981045100e-2); //  W/Hz, ASE noise
 const double RHO(0.002110815172018); // (GHz)^(-2)
 const double MU(7.579351569161363e-07); // (muW/GHz)^(-2)
 const string MODULATION("PM-QPSK"); // modulation format
-const double NOISEMAX(2.133712660028449); // maximum tolerable noise
-const int GUARDBAND(13); // GHz, guardband size
-const int FREQUENCY_MA(320000); // GHz, spectrum width
+const double NOISE_MAX(2.133712660028449); // maximum tolerable noise
+const double SLOT_SIZE(12.5); // GHz
+const int GUARDBAND(1); // guardband, 1 frequency slot is 12.5 GHz
+const long int FREQUENCY_MAX(25600); // #total slots, 12.5 GHz slot size
 const double BANDWIDTH_MIN(30); // GHz, minimum bandwidth
 const double INF(10000000000000); // infinity
 const double INF2(pow(INF, 2)); // even bigger infinity
@@ -101,9 +105,11 @@ const double INF2(pow(INF, 2)); // even bigger infinity
 Matrix_double coronet_cost; // coronet cost matrix
 Matrix_link coronet_connection; // coronet connection list
 int n_nodes; // #nodes
-Row_nodepair link_list; // 100km
+int n_links; // #links
 Row_int regen_list; // indexes of Regens
 int n_regens; // #Regens
+Matrix_int link_sub2ind; // (src, dst) pair to index
+Matrix_int link_ind2sub; // index to (src, dst) pair
 
 // Link structure for the shortest path algorithm
 struct Link
@@ -112,7 +118,7 @@ struct Link
     double length;
 };
 
-default_random_engine generator;
+default_random_engine generator (127849);
 
 // Read data from csv
 tuple<Matrix_double, int, Row_int> read_csv(string file_name)
@@ -264,16 +270,21 @@ void load_simulation_parameters(string algorithm)
         coronet_connection.push_back(tmp_row_link);
     }
 
-    // Calculate link lengths
-    Nodepair tmp_link;
-    for(int i=0; i<n_nodes; ++i){
-        for(int j=0; j<n_nodes; ++j){
-            if(coronet_cost[i][j]<INF){
-                tmp_link = make_tuple(i, j, coronet_cost[i][j]);
-                link_list.push_back(tmp_link);
-            }
+    // Create link_sub2ind and link_ind2sub
+    int link_index(0);
+    Row_int link_sub;
+    Row_int tmp_row_int2(n_nodes, -1);
+    for (int i = 0; i < n_nodes; ++i){
+        link_sub2ind.push_back(tmp_row_int2);
+        for (int j = 0; j < n_nodes; ++j){
+            if (coronet_cost[i][j] >= INF) continue;
+            link_sub2ind[i][j] = link_index;
+            link_sub = {i, j};
+            link_ind2sub.push_back(link_sub);
+            link_index += 1;
         }
     }
+    n_links = link_index;
 
     // Load Regen allocation according to algorithm
     tuple<Row_int, int> tmp_regens;
@@ -310,34 +321,6 @@ void load_simulation_parameters(string algorithm)
         tie(regen_list, tmp_n_regens) = tmp_regens;
         regen_list.resize(n_regens);
     }
-}
-
-// Generate random traffic demands, demand (1, 2) is different
-// from (2, 1)
-// To make the traffic demands generalize enough, all input
-// arguments are vectors.
-Row_nodepair generate_demands(Matrix_int demands_per_pair,
-    Matrix_double bandwidth_mean, Matrix_double bandwidth_std)
-{
-    Row_nodepair demands;
-    double tmp_bandwidth;
-    Nodepair tmp_demand;
-    for(int i=0; i<n_nodes; ++i){
-        for(int j=0; j<n_nodes; ++j){
-            if(i==j) continue;
-            normal_distribution<double> distribution(
-                bandwidth_mean[i][j], bandwidth_std[i][j]);
-            for(int n=0; n<demands_per_pair[i][j]; ++n){
-                tmp_bandwidth = distribution(generator);
-                if(tmp_bandwidth<BANDWIDTH_MIN){
-                    tmp_bandwidth = BANDWIDTH_MIN;
-                }
-                tmp_demand = make_tuple(i, j, tmp_bandwidth);
-                demands.push_back(tmp_demand);
-            }
-        }
-    }
-    return demands;
 }
 
 // Find the shortest path between src and all other nodes
@@ -391,6 +374,158 @@ Matrix_path all_pair_shortest_path(void)
         spap.push_back(tmp);
     }
     return spap;
+}
+
+// Generate random traffic demands, demand (1, 2) is different
+// from (2, 1)
+// To make the traffic demands generalize enough, all input
+// arguments are vectors.
+// Output: (src, dst, bandwidth), path length, demand_path_node,
+// demand_path_link, demand_on_link
+Demand generate_demands(Matrix_int demands_per_pair,
+    Matrix_double bandwidth_mean, Matrix_double bandwidth_std)
+{
+    // Generate demands with normal distributed bandwidth
+    Row_nodepair demands;
+    double tmp_bandwidth;
+    Nodepair tmp_demand;
+    for(int i=0; i<n_nodes; ++i){
+        for(int j=0; j<n_nodes; ++j){
+            if(i==j) continue;
+            normal_distribution<double> distribution(
+                bandwidth_mean[i][j], bandwidth_std[i][j]);
+            for(int n=0; n<demands_per_pair[i][j]; ++n){
+                tmp_bandwidth = distribution(generator);
+                if(tmp_bandwidth<BANDWIDTH_MIN){
+                    tmp_bandwidth = BANDWIDTH_MIN;
+                }
+                tmp_demand = make_tuple(i, j, tmp_bandwidth);
+                demands.push_back(tmp_demand);
+            }
+        }
+    }
+
+    // Calculate APSP
+    Matrix_path apsp = all_pair_shortest_path();
+
+    // Related to nodes
+    Row_double demand_path_length; // Create path_length
+    Matrix_int demand_path_node; // Create demand_path_node
+    Matrix_int demand_path_link(demands.size(), Row_int());
+    Matrix_int demand_on_link(n_links, Row_int());
+    double tmp_path_length;
+    Row_int tmp_path_node;
+    int tmp_src, tmp_dst, tmp_link_idx;
+    for (size_t i = 0; i < demands.size(); ++i){
+        tmp_src = get<0>(demands[i]);
+        tmp_dst = get<1>(demands[i]);
+        tmp_path_length = get<2>(apsp[tmp_src][tmp_dst]);
+        tmp_path_node = get<3>(apsp[tmp_src][tmp_dst]);
+        demand_path_length.push_back(tmp_path_length);
+        demand_path_node.push_back(tmp_path_node);
+        for (size_t j = 0; j < tmp_path_node.size()-1; ++j){
+            tmp_src = tmp_path_node[j];
+            tmp_dst = tmp_path_node[j+1];
+            tmp_link_idx = link_sub2ind[tmp_src][tmp_dst];
+            demand_path_link[i].push_back(tmp_link_idx);
+            demand_on_link[tmp_link_idx].push_back(i);
+        }
+    }
+
+    return make_tuple(demands, demand_path_length,
+        demand_path_node, demand_path_link, demand_on_link);
+}
+
+// Find the first running sequence with length_th available slots
+long int find_first_avail_slot(Row_sc avail, int length_th)
+{
+    // First find running available slots
+    avail.insert(avail.begin(), 0);
+    avail.push_back(0);
+    for (size_t i = 1; i < avail.size(); ++i)
+        avail[i] = avail[i] - avail[i-1];
+    avail.erase(avail.begin());
+    // Then find starts and ends of running sequences
+    Row_longint run_starts, run_ends;
+    for (size_t i = 0; i < avail.size(); ++i){
+        if (avail[i] == 1) run_starts.push_back(i);
+        if (avail[i] == -1) run_ends.push_back(i);
+    }
+    // Calculate lengths of running sequences, stop if find
+    // one with enough length
+    size_t i(0);
+    for (; i < run_starts.size(); ++i){
+        long int tmp = run_ends[i] - run_starts[i];
+        if (tmp >= (long) length_th) break;
+    }
+    // if not find any, return -1
+    if (i == run_starts.size()) return -1;
+    // else return the start index of the sequence
+    else return run_starts[i];
+}
+
+void simulate_blocking(Demand demand_tuple)
+{
+    // Unpack demand_tuple
+    Row_nodepair demands;
+    Row_double demand_path_length;
+    Matrix_int demand_path_node, demand_path_link, demand_on_link;
+    tie(demands, demand_path_length, demand_path_node,
+        demand_path_link, demand_on_link) = demand_tuple;
+
+    // Create a shuffled demand list
+    size_t n_demands = demands.size();
+    Row_int demand_order(n_demands);
+    iota(begin(demand_order), end(demand_order), 0);
+    shuffle(demand_order.begin(), demand_order.end(), generator);
+
+    // Initialize variables
+    // record blocking rate
+    Row_double blocking_history(n_demands, 0);
+    // frequency slot availability, true means available
+    Matrix_sc freq_slot_avail(n_links, Row_sc(FREQUENCY_MAX, 1));
+    // allocation of demands
+    Row_nodepair demand_allocation(n_demands);
+    // noise per demand per link
+    Matrix_double noise_per_demand_link(n_demands, Row_double(n_links, 0));
+    int block_spectrum(0), block_noise(0), block_total(0);
+
+    // Allocate demands one by one
+    for (size_t i = 0; i < n_demands; ++i){
+        int demand_id = demand_order[i];
+        Row_int link_used = demand_path_link[demand_id];
+
+        // Find available frequency slots
+        Row_sc tmp_avail(FREQUENCY_MAX, 1);
+        for (size_t j = 0; j < link_used.size(); ++j)
+            for (long int k = 0; k < FREQUENCY_MAX; ++k)
+                tmp_avail[k] = tmp_avail[k] *
+                    freq_slot_avail[link_used[j]][k];
+        // Find the first running ones
+        int n_slots = ceil((get<2>(demands[demand_id])+GUARDBAND)/SLOT_SIZE);
+        long int sequence_start = find_first_avail_slot(tmp_avail, n_slots);
+        // Spectrum block
+        if (sequence_start == -1) {
+            block_spectrum++;
+            block_total++;
+            blocking_history[i] = block_total / i;
+            continue;
+        }
+        bool block_flag = check_noise_block(demand_id, sequence_start,
+            demand_allocation, noise_per_demand_link);
+        // Successfully allocate one demand
+        if (!block_flag){
+            for (size_t j = 0; j < link_used.size(); ++j)
+                fill(freq_slot_avail[link_used[j]].begin()+sequence_start,
+                     freq_slot_avail[link_used[j]].begin()+sequence_start+n_slots, 0);
+        }
+        else{
+            block_noise++;
+            block_total++;
+            blocking_history[i] = block_total / i;
+        }
+    }
+
 }
 
 #endif // SIMUBP_H_INCLUDED
