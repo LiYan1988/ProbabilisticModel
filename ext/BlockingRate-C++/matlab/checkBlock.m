@@ -53,7 +53,7 @@ for i=1:length(linksUsed)
     demandsPSD = psd*ones(length(demandsOnLink), 1);
     [noise_all, noise_sci, noise_xci, noise_ase, noise_xci_ub] = ...
         calculateNoise(demandsBandwidth, demandsCenterFrequency, ...
-        demandsPSD, LinkLengths(i), alpha, beta, gamma, Nase, gb);
+        demandsPSD, LinkLengths(linksUsed(i)), alpha, beta, gamma, Nase, gb);
     demandsNoisePerLinkAllTmp(demandsOnLink, linksUsed(i)) = noise_all;
 end
 

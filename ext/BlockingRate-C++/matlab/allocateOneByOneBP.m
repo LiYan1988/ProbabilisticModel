@@ -51,6 +51,7 @@ for i=1:Ndemands
         DemandStruct);
     if ~blockFlag
         % if the demand is not blocked, allocate resource
+        fprintf('Demand %d is allocated, block probability %.4e, %d allocated.\n', idx, sum(blockStatistics)/Ndemands, i);
         for j=1:length(linkUsed)
             frequencySlotsAvailability(run_start(run_idx):...
                 run_start(run_idx)+demandsMatrix(idx, 3)-1+gb, ...
