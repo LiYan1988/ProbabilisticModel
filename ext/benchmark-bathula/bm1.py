@@ -21,21 +21,23 @@ cost_matrix = cost_matrix.as_matrix()
 #cost_matrix = cost_matrix.astype(int)
 
 # Define the transmission reach, the unit is km
-tr = 2000
+#tr = 2000
 
 class BenchmarkBathula(object):
     '''Solve Bathula's benchmark
     '''
     
-    def __init__(self, topology_matrix, tr, c_r, c_m):
+    def __init__(self, topology_matrix, tr, c_r, c_m, latitude):
         '''
         Initialize the topology, transmission reach, and cost. Also calculate 
         the shortest paths.
+        latitude should be the same size as topology_matrix
         '''
         self.topology_matrix = topology_matrix
         self.tr = tr
         self.c_r = c_r # cost per RS
-        self.c_m = c_m # cost per km 
+        self.c_m = c_m # cost per km
+        self.latitude = latitude
         
         # Create networkx graph object for the network topology
         self.graph = nx.to_networkx_graph(topology_matrix,
@@ -75,7 +77,7 @@ class BenchmarkBathula(object):
             for (i, j) in self.aspap.keys()}
         
         
-    def solve(self, latitude=None, **kwargs):
+    def solve(self, **kwargs):
         '''
         Solve the CRLP MILP
         '''
@@ -100,8 +102,8 @@ class BenchmarkBathula(object):
         
         # Add constraints
         # The paths are shortest 
-        model.addConstrs((r[k]<=self.augment_apsp[k] 
-            for k in requests), 'ASAP')
+        model.addConstrs((r[k]<=self.augment_apsp[k]*(1+self.latitude)
+            -self.latitude[k]*self.c_r for k in requests), 'ASAP')
         model.addConstrs((r[k]==quicksum(self.augment_cost_matrix[l]*f[l+k]
             for l in links) for k in requests), 'SP')
         

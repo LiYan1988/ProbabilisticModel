@@ -7,22 +7,25 @@ int main()
     n_regens = 13;
 
     // benchmark
-    string algorithm = "benchmark_Bathula_MD_opt";
+    string algorithm = "benchmark_Bathula_MD_optTR2900"; //"benchmark_Bathula_MD_opt";
     load_simulation_parameters(algorithm);
 
 //    string algorithm = "proposed_Yan_MD_RC";
 //    load_simulation_parameters(algorithm);
 
     // Generate traffic demands
-    Matrix_int demands_per_pair(n_nodes, Row_int(n_nodes, 5));
-    Matrix_double bandwidth_mean(n_nodes, Row_double(n_nodes, 150));
+    Matrix_int demands_per_pair(n_nodes, Row_int(n_nodes, 1));
+    Matrix_double bandwidth_mean(n_nodes, Row_double(n_nodes, 200));
     Matrix_double bandwidth_std(n_nodes, Row_double(n_nodes, 20));
     Demand x = generate_demands(demands_per_pair, bandwidth_mean,
         bandwidth_std);
 
-    Row_double blocking_history = simulate_blocking(x);
+    tuple<Row_double, double, double> simulation_result = simulate_blocking(x);
+    Row_double blocking_history = get<0>(simulation_result);
+    double block_noise = get<1>(simulation_result), block_spectrum = get<2>(simulation_result);
+    cout<<"#noise block = "<<block_noise<<", #resource block = "<<block_spectrum<<endl;
 //
-    write_csv_vec("bp_bathula_opt_.csv", blocking_history, false);
+    write_csv_vec("bp_bathula_opt.csv", blocking_history, false);
 
 //    write_csv_vec("bp_yan_RC.csv", blocking_history, false);
 

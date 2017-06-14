@@ -26,16 +26,17 @@ systemParameters.gamma = gamma;
 systemParameters.Nase = Nase;
 
 %% Calculate transmission reaches
-bitRates = (10:10:2000)'; % Gbps
-spectralEfficiency = (1:0.1:12)';
+bitRates = (100:50:2000)'; % Gbps
+spectralEfficiency = (2:2:12)';
 Nreach = zeros(length(bitRates), length(spectralEfficiency));
 tic;
 for i=1:length(bitRates)
     bitRate = bitRates(i);
     parfor j=1:length(spectralEfficiency)
-        nChannels = 4000/(bitRate/spectralEfficiency(j));
+        nChannels = floor(4000/(bitRate/spectralEfficiency(j)));
         Nreach(i, j) = findReach(bitRate, spectralEfficiency(j), nChannels, 15, systemParameters);
     end
+    fprintf('%d is finished\n', i);
 end
 runtime = toc;
 

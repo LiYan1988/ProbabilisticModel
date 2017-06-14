@@ -9,6 +9,6 @@ seidx = zeros(1, length(se));
 for i=1:length(se)
     seidx(i) = find(spectralEfficiency==se(i));
 end
-bridx = min(bandwidth*se/10, 200);
+bridx = find(bitRates==bandwidth);
 tr = Nreach(bridx, seidx);
-tr = diag(tr);
+% tr = diag(tr);

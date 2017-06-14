@@ -79,8 +79,8 @@ typedef vector<Row_link> Matrix_link;
 typedef tuple<int, int, double, Row_int> Path;
 typedef vector<Path> Row_path;
 typedef vector<Row_path> Matrix_path;
-//typedef vector<signed char> Row_sc; // for +1, 0, and -1
-//typedef vector<Row_sc> Matrix_sc;
+typedef vector<signed char> Row_sc; // for +1, 0, and -1
+typedef vector<Row_sc> Matrix_sc;
 typedef tuple<Row_nodepair, Row_double,
     Matrix_int, Matrix_int, Matrix_int> Demand;
 //typedef vector<long int> Row_longint;
@@ -98,10 +98,11 @@ const string MODULATION("PM-QPSK"); // modulation format
 const double NOISE_MAX(2.133712660028449); // maximum tolerable noise
 const double SLOT_SIZE(13); // GHz
 const int GUARDBAND(1); // guardband, 1 frequency slot is 12.5 GHz
-const int FREQUENCY_MAX(25600); // #total slots, 12.5 GHz slot size
+const long int FREQUENCY_MAX(256000); // #total slots, 12.5 GHz slot size
 const double BANDWIDTH_MIN(30); // GHz, minimum bandwidth
 const double INF(10000000000000); // infinity
 const double INF2(INF*INF); // even bigger infinity
+const double NOISE_SCALE(1.0); // in case we want to scale noise
 
 Matrix_double coronet_cost; // coronet cost matrix
 Matrix_link coronet_connection; // coronet connection list
@@ -348,6 +349,9 @@ void load_simulation_parameters(string algorithm)
     }
     else if(algorithm.compare("benchmark_Predo_MD_RoutingReach")==0){
         csv_data = read_csv("benchmark_Predo_MD_RoutingReach.csv");
+    }
+    else if(algorithm.compare("benchmark_Bathula_MD_optTR2900")==0){
+        csv_data = read_csv("benchmark_Bathula_MD_optTR2900.csv");
     }
     vector<string> algorithm_split = split(algorithm, '_');
     string author = algorithm_split[1];
@@ -604,7 +608,7 @@ bool check_noise_block(int demand_id,
             tmp_noise_per_demand_link[tmp_demand_id][
             tmp_link_involved[k]];
             // if the noise threshold is exceeded, demand blocked
-            if (noise_accumulated > NOISE_MAX){
+            if (noise_accumulated * NOISE_SCALE > NOISE_MAX){
                 block_flag = true;
                 break;
             }
@@ -629,7 +633,7 @@ bool check_noise_block(int demand_id,
 }
 
 
-Row_double simulate_blocking(const Demand & demand_tuple)
+tuple<Row_double, double, double> simulate_blocking(const Demand & demand_tuple)
 {
     // Unpack demand_tuple
     Row_nodepair demands;
@@ -648,7 +652,7 @@ Row_double simulate_blocking(const Demand & demand_tuple)
     // record blocking rate
     Row_double blocking_history(n_demands, 0);
     // frequency slot availability, true means available
-    Matrix_int freq_slot_avail(n_links, Row_int(FREQUENCY_MAX, 1));
+    Matrix_sc freq_slot_avail(n_links, Row_sc(FREQUENCY_MAX, 1));
     // allocation of demands, (start, end, center) slot index
     Row_double dummy{-1, -1, -1};
     Matrix_double demand_allocation(n_demands, dummy);
@@ -663,7 +667,7 @@ Row_double simulate_blocking(const Demand & demand_tuple)
         // Find available frequency slots
         Row_int tmp_avail(FREQUENCY_MAX, 1);
         for (size_t j = 0; j < link_used.size(); ++j)
-            for (int k = 0; k < FREQUENCY_MAX; ++k)
+            for (long int k = 0; k < FREQUENCY_MAX; ++k)
                 tmp_avail[k] = tmp_avail[k] *
                     freq_slot_avail[link_used[j]][k];
         // Find the first running ones
@@ -697,7 +701,7 @@ Row_double simulate_blocking(const Demand & demand_tuple)
         }
     }
 
-    return blocking_history;
+    return make_tuple(blocking_history, block_noise, block_spectrum);
 }
 
 #endif // SIMUBP_H_INCLUDED
